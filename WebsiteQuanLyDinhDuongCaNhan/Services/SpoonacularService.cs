@@ -38,27 +38,47 @@ public class SpoonacularService
                 url += $"&exclude={exclude}";
             }
 
-            Console.WriteLine($"Spoonacular URL (Generate Meal Plan): {url}");
+            // Detailed request logging
+            Console.WriteLine("========== SPOONACULAR API REQUEST ==========");
+            Console.WriteLine($"[REQUEST] Endpoint: /mealplanner/generate");
+            Console.WriteLine($"[REQUEST] Method: GET");
+            Console.WriteLine($"[REQUEST] Target Calories: {tdee:F0}");
+            Console.WriteLine($"[REQUEST] TimeFrame: day");
+            Console.WriteLine($"[REQUEST] Diet: {(string.IsNullOrEmpty(diet) ? "none" : diet)}");
+            Console.WriteLine($"[REQUEST] Exclude: {(string.IsNullOrEmpty(exclude) ? "none" : exclude)}");
+            Console.WriteLine($"[REQUEST] Full URL: {url.Replace(apiKey, "***HIDDEN***")}");
+            Console.WriteLine("=============================================");
 
             using (HttpClient client = new HttpClient())
             {
                 HttpResponseMessage response = await client.GetAsync(url);
 
+                // Detailed response logging
+                Console.WriteLine("========== SPOONACULAR API RESPONSE ==========");
+                Console.WriteLine($"[RESPONSE] Status Code: {(int)response.StatusCode} {response.StatusCode}");
+                Console.WriteLine($"[RESPONSE] Success: {response.IsSuccessStatusCode}");
+                Console.WriteLine($"[RESPONSE] Headers: {response.Headers}");
+
+                string jsonData = await response.Content.ReadAsStringAsync();
+                Console.WriteLine($"[RESPONSE] Content Length: {jsonData?.Length ?? 0} characters");
+                Console.WriteLine($"[RESPONSE] Content: {jsonData}");
+                Console.WriteLine("==============================================");
+
                 if (!response.IsSuccessStatusCode)
                 {
-                    string errorContent = await response.Content.ReadAsStringAsync();
-                    Console.WriteLine($"Spoonacular API Error: {response.StatusCode} - {errorContent}");
+                    Console.WriteLine($"[ERROR] API returned error status. Message: {jsonData}");
                     return "{\"error\": \"Không thể tạo thực đơn\"}";
                 }
 
-                string jsonData = await response.Content.ReadAsStringAsync();
-                Console.WriteLine($"Spoonacular response: {jsonData}");
                 return jsonData;
             }
         }
         catch (Exception ex)
         {
-            Console.WriteLine("Error in GenerateDailyMealPlanAsync: " + ex.Message);
+            Console.WriteLine("========== EXCEPTION ==========");
+            Console.WriteLine($"[EXCEPTION] Message: {ex.Message}");
+            Console.WriteLine($"[EXCEPTION] Stack Trace: {ex.StackTrace}");
+            Console.WriteLine("================================");
             return "{\"error\": \"Đã xảy ra lỗi khi tạo thực đơn\"}";
         }
     }
