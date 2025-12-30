@@ -106,9 +106,21 @@
         <p class="text-danger text-center">Lỗi khi xử lý dữ liệu: @ex.Message</p>
     }
 }
-else
-{
     <p class="text-warning text-center">Đang tải thực đơn...</p>
+}
+
+<!-- Always show Raw Response for Debugging -->
+@if (ViewBag.ApiRawResponse != null)
+{
+    <div class="container mt-5">
+        <div class="alert alert-info">
+            <h4>🐛 API Debug Log</h4>
+            <details>
+                <summary>Click to view raw API response</summary>
+                <pre style="background-color: #f8f9fa; padding: 15px; border-radius: 5px; white-space: pre-wrap; word-break: break-all; max-height: 400px; overflow-y: auto;">@ViewBag.ApiRawResponse</pre>
+            </details>
+        </div>
+    </div>
 }
 
 <!-- JavaScript for recipe details -->

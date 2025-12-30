@@ -48,6 +48,8 @@ public class AIMealPlannerController : Controller
             System.Diagnostics.Debug.WriteLine($"[DEBUG] Spoonacular Response: {mealPlanJson}");
 
             // Pass meal plan to view
+            ViewBag.ApiRawResponse = mealPlanJson; // Always pass raw response for debugging
+
             if (!string.IsNullOrWhiteSpace(mealPlanJson) && !mealPlanJson.Contains("\"error\""))
             {
                 ViewBag.MealPlan = mealPlanJson;
@@ -56,7 +58,7 @@ public class AIMealPlannerController : Controller
             else
             {
                 ViewBag.MealPlan = null;
-                ViewBag.ErrorMessage = $"Không thể tải danh sách món ăn. API Response: {mealPlanJson?.Substring(0, Math.Min(200, mealPlanJson?.Length ?? 0))}";
+                ViewBag.ErrorMessage = "Không thể tải danh sách món ăn. Xem chi tiết lỗi bên dưới.";
             }
 
             return View("MealPlan");

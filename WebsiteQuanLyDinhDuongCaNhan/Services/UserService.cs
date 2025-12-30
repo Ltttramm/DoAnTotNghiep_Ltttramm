@@ -11,7 +11,7 @@ public class UserService
             age--;
 
 
-        if (user.Gender.ToLower() == "Male")
+        if (user.Gender.ToLower() == "male")
         {
             bmr = (double)(88.36 + (13.4 * user.Weight) + (4.8 * user.Height) - (5.7 * age));
         }
