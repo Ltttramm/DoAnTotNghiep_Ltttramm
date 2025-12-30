@@ -1,0 +1,100 @@
+﻿<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - NutritionHub</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/js/all.min.js"></script>
+    <link rel="stylesheet" href="~/CSS/style.css" />
+</head>
+<body class="bg-[#F5F5DC] text-[#5C504D] min-h-screen">
+    <!-- Header -->
+    @if (ViewData["HideHeader"] == null || !(bool)ViewData["HideHeader"])
+    {
+        <header class="fixed top-0 left-0 w-full flex justify-between items-center px-8 py-3 border-b border-gray-400 bg-[#EDE9DD] shadow-md z-50">
+            <h1 class="text-3xl font-bold text-[#C4A46B]">SmartMeal</h1>
+            <nav>
+                <ul class="flex space-x-4">
+                    <li><a href="/" class="hover:text-[#B8860B]">Home</a></li>
+                    <li><a href="/about" class="hover:text-[#B8860B]">About</a></li>
+                    <li><a href="/nutrition" class="hover:text-[#B8860B]">Nutrition</a></li>
+                    <li><a href="/contact" class="hover:text-[#B8860B]">Contact</a></li>
+                </ul>
+            </nav>
+
+            <div class="Sign-btn flex space-x-1">
+                @if (User.Identity.IsAuthenticated)
+                {
+                    <div class="relative">
+                        <button onclick="toggleMenu()" class="fixed-button flex items-center bg-[#C4A46B] px-6 py-3 rounded-full text-white hover:bg-[#A89F98] justify-between">
+                            <i class="fas fa-user-circle text-xl mr-2"></i>
+                            <span class="flex-1 text-left">@User.Identity.Name</span>
+                            <span class="ml-2">▼</span>
+                        </button>
+
+                        <div id="menu" class="absolute right-0 mt-2 w-52 bg-white shadow-lg rounded-lg hidden">
+                            <a href="@Url.Action("Profile", "Auth")" class="flex items-center px-4 py-2 text-gray-700 hover:bg-gray-200">
+                                <i class="fas fa-user-circle mr-2"></i> Hồ sơ cá nhân
+                            </a>
+                            <a href="@Url.Action("MealPlan", "AIMealPlanner")" class="flex items-center px-4 py-2 text-gray-700 hover:bg-gray-200">
+                                <i class="fas fa-utensils mr-2"></i> Kế hoạch ăn uống
+                            </a>
+                            <a href="@Url.Action("Analyze", "Nutrition")" class="flex items-center px-4 py-2 text-gray-700 hover:bg-gray-200">
+                                <i class="fas fa-chart-pie mr-2"></i> Phân tích dinh dưỡng
+                            </a>
+                            <a href="@Url.Action("FoodRecognition", "FoodRecognition")" class="flex items-center px-4 py-2 text-gray-700 hover:bg-gray-200">
+                                <i class="fas fa-weight mr-2"></i> Nhận diện món ăn
+                            </a>
+                            <a href="/nutrition-assistant" class="flex items-center px-4 py-2 text-gray-700 hover:bg-gray-200">
+                                <i class="fas fa-robot mr-2"></i> Trợ lý dinh dưỡng
+                            </a>
+                            <a href="/community" class="flex items-center px-4 py-2 text-gray-700 hover:bg-gray-200">
+                                <i class="fas fa-users mr-2"></i> Cộng đồng
+                            </a>
+                            <a href="@Url.Action("Logout", "Auth")" class="flex items-center px-4 py-2 text-red-500 hover:bg-gray-200">
+                                <i class="fas fa-sign-out-alt mr-2"></i> Logout
+                            </a>
+                        </div>
+                    </div>
+                }
+                else
+                {
+                    <a href="@Url.Action("Register", "Auth")" class="bg-[#C4A46B] px-5 py-2 rounded-full text-white hover:bg-[#A89F98]">Sign Up</a>
+                    <a href="@Url.Action("Login", "Auth")" class="bg-[#C4A46B] px-5 py-2 rounded-full text-white hover:bg-[#A89F98]">Sign In</a>
+                }
+            </div>
+        </header>
+    }
+
+    <!-- Main Content -->
+    <main>
+        @RenderBody()
+    </main>
+
+    <!-- Footer -->
+    @if (ViewData["HideFooter"] == null || !(bool)ViewData["HideFooter"])
+    {
+        <footer class="text-center py-6 text-gray-700 text-sm bg-[#EDE9DD]">
+            
+        </footer>
+    }
+
+</body>
+</html>
+<script>
+    function toggleMenu() {
+        var menu = document.getElementById("menu");
+        menu.classList.toggle("hidden");
+    }
+
+    // Đóng menu nếu click ra ngoài
+    document.addEventListener("click", function (event) {
+        var menu = document.getElementById("menu");
+        var button = document.querySelector(".Sign-btn button");
+
+        if (!menu.contains(event.target) && !button.contains(event.target)) {
+            menu.classList.add("hidden");
+        }
+    });
+</script>

@@ -1,0 +1,40 @@
+﻿@{
+    ViewBag.Title = "Nhận diện món ăn";
+    ViewData["HideHeader"] = true;
+    ViewData["HideFooter"] = true;
+}
+
+<h2>Nhận diện món ăn từ ảnh</h2>
+
+<form action="@Url.Action("UploadImage", "FoodRecognition")" method="post" enctype="multipart/form-data">
+    <input type="file" name="file" id="fileInput" required onchange="previewImage(event)" />
+    <button type="submit">Nhận diện</button>
+</form>
+
+<!-- Hiển thị ảnh sau khi chọn -->
+<img id="imagePreview" src="#" style="max-width: 300px; display: none; margin-top: 10px;">
+
+@if (ViewBag.ImageUrl != null)
+{
+    <h3>Ảnh đã nhận diện:</h3>
+    <img src="@ViewBag.ImageUrl" alt="Ảnh món ăn" style="max-width: 300px;">
+}
+
+@if (ViewBag.FoodName != null)
+{
+    <h3>Kết quả nhận diện:</h3>
+    <p><strong>Tên món ăn:</strong> @ViewBag.FoodName</p>
+    <p><strong>Thông tin dinh dưỡng:</strong> @ViewBag.NutritionInfo</p>
+}
+
+<script>
+    function previewImage(event) {
+        var reader = new FileReader();
+        reader.onload = function () {
+            var output = document.getElementById('imagePreview');
+            output.src = reader.result;
+            output.style.display = 'block';
+        };
+        reader.readAsDataURL(event.target.files[0]);
+    }
+</script>

@@ -1,0 +1,405 @@
+﻿html {
+    font-size: 14px;
+}
+
+@media (min-width: 768px) {
+    html {
+        font-size: 16px;
+    }
+}
+
+body {
+    background-color: #EDE9DD; /* Màu nền beige nhạt */
+    color: #5C504D; /* Màu chữ chính */
+    margin: 0;
+    padding: 0;
+    width: 100%;
+}
+
+h1, h2, h3 {
+    color: #C4A46B; /* Màu vàng gold cho tiêu đề */
+}
+
+a {
+    color: #A89F98; /* Màu chữ phụ */
+}
+
+button {
+    background-color: #C4A46B;
+    color: #FFF;
+    border: none;
+}
+
+    button:hover {
+        background-color: #A89F98;
+    }
+
+.carousel-container {
+    overflow: hidden;
+    white-space: nowrap;
+    position: relative;
+    width: 100%;
+}
+
+.carousel-track {
+    display: flex;
+    gap: 2rem;
+    animation: scroll 15s linear infinite;
+}
+
+.carousel-item {
+    flex: 0 0 auto;
+    width: 250px;
+    background-color: #EDE9DD;
+    padding: 20px;
+    border-radius: 10px;
+    text-align: center;
+    box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+@keyframes scroll {
+    from {
+        transform: translateX(100%);
+    }
+
+    to {
+        transform: translateX(-100%);
+    }
+}
+
+
+
+/* Loại bỏ margin, padding cho toàn bộ trang */
+html, body, heafe {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    overflow-x: hidden; /* Tránh thanh cuộn ngang */
+}
+
+/* Đảm bảo tất cả các div chính không có margin */
+.container, .text-center, .header, .scroll-container {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+}
+
+
+
+.header {
+    position: relative;
+    width: 100%;
+    height: 400px; /* Chiều cao có thể điều chỉnh */
+    background: url('/Image/eat clean.jfif') no-repeat center center;
+    display: flex;
+    align-items: center;
+    /*justify-content: center;*/
+    text-align: center;
+    margin: auto;
+    padding: 0;
+    background-size: cover
+}
+
+    .header::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.4); /* Lớp phủ mờ */
+        backdrop-filter: blur(3px);
+    }
+
+
+.header-content {
+    position: relative;
+    color: white;
+    z-index: 1;
+    padding: 20px;
+}
+
+
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.scroll-container {
+    overflow: hidden;
+    width: 100%;
+    white-space: nowrap;
+    position: relative;
+    margin-top: 30px;
+    padding: 0;
+}
+
+
+.scroll-content {
+    display: flex;
+    gap: 16px;
+    width: max-content; /* Đảm bảo nội dung không bị cắt */
+    animation: scroll 20s linear infinite;
+    flex-wrap: nowrap;
+}
+
+.scroll-item {
+    background: #EDE9DD;
+    padding: 16px;
+    border-radius: 12px;
+    text-align: center;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    width: 160px;
+}
+
+    .scroll-item img {
+        width: 64px;
+        display: block;
+        margin: 0 auto 10px;
+    }
+
+    .scroll-item h3 {
+        font-size: 18px;
+        font-weight: 600;
+        color: #C4A46B;
+    }
+
+    .scroll-item p {
+        font-size: 14px;
+        color: #5C504D;
+    }
+
+/* Tạo hiệu ứng cuộn mượt */
+@keyframes scroll {
+    from {
+        transform: translateX(0);
+    }
+
+    to {
+        transform: translateX(-100%);
+    }
+}
+
+
+.animate-fade {
+    animation: fadeIn 1s ease-out;
+}
+
+/* Định dạng chữ để không bị tràn */
+p {
+    word-wrap: break-word;
+    white-space: normal;
+    overflow-wrap: break-word;
+    text-align: center;
+    max-width: 90%;
+    margin: 0 auto;
+}
+
+div {
+    min-width: 200px;
+    padding: 10px;
+}
+
+.nutrition-card {
+    background: #EDE9DD;
+    padding: 16px;
+    border-radius: 10px;
+    text-align: center;
+    box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+    flex: 1 1 300px;
+}
+
+.nutrition-img {
+    width: 80px;
+    margin: 0 auto;
+}
+
+.hero-section {
+    position: relative;
+    width: 100%;
+    height: 400px;
+    overflow: hidden;
+    margin: 0;
+    padding: 0;
+    margin-top: 80px;
+}
+
+.hero-image {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 400px;
+    object-fit: cover;
+}
+
+.hero-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    background-color: rgba(0, 0, 0, 0.5);
+    text-align: center;
+    padding: 20px;
+}
+
+.hero-title {
+    font-size: 3rem;
+    font-weight: 800;
+    color: #C4A46B;
+}
+
+.hero-text {
+    color: #F5F5F5;
+    font-size: 1.2rem;
+    margin-top: 10px;
+}
+
+.hero-image-wrapper {
+    position: relative;
+    width: 100%;
+    height: 400px; /* Điều chỉnh chiều cao tùy thích */
+    overflow: hidden;
+}
+
+    .hero-image-wrapper img {
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        opacity: 0;
+        transition: opacity 0.8s ease-in-out;
+    }
+
+        .hero-image-wrapper img.active {
+            opacity: 1;
+        }
+
+.image-container {
+    position: relative;
+    width: 100%;
+    max-width: 100%;
+    height: auto;
+    overflow: hidden;
+}
+
+.background-image {
+    width: 100%;
+    height: auto;
+    display: block;
+    margin-top: 20px;
+}
+
+.text-overlay {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    text-align: center;
+    color: #8a5b2f;
+    font-family: Arial, sans-serif;
+    width: 80%; /* Đảm bảo nội dung chiếm 80% chiều rộng ảnh */
+    margin-top: 20px;
+}
+
+    .text-overlay h2 {
+        font-family: 'Raleway';
+        font-size: 40px;
+        text-align: center;
+        color: #5C504D;
+        margin-top: 20px;
+        margin-bottom: 20px;
+        width: 100%; /* Đảm bảo chiều rộng không vượt quá vùng chứa */
+        word-wrap: break-word; /* Xuống dòng khi cần */
+        white-space: normal; /* Ngăn chặn chữ bị tràn ra ngoài */
+        overflow: hidden; /* Ẩn phần tràn */
+    }
+
+
+    .text-overlay .intro {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        width: 100%; /* Nội dung nằm trong text-overlay có width 80% của ảnh */
+    }
+
+    .text-overlay .item {
+        display: flex;
+        align-items: center;
+        text-align: left;
+        width: 100%;
+        max-width: 100%;
+        padding: 15px;
+        border-radius: 10px;
+        margin-bottom: 15px;
+    }
+
+        .text-overlay .item img.icon {
+            width: 50px;
+            height: 50px;
+            margin-right: 15px;
+        }
+
+        .text-overlay .item p {
+            font-family: 'Raleway';
+            font-size: 18px;
+            color: #5C504D;
+            margin: 0;
+            flex: 1;
+            word-wrap: break-word;
+        }
+
+.dinner-strategy {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 40px;
+    gap: 40px;
+    max-width: 1200px;
+    margin: auto;
+}
+
+.content {
+    flex: 1;
+    max-width: 600px;
+}
+
+    .content h2 {
+        font-size: 32px;
+        font-weight: bold;
+        color: #333;
+        margin-bottom: 20px;
+        text-align: center;
+    }
+
+    .content p {
+        font-size: 18px;
+        color: #666;
+        line-height: 1.6;
+    }
+
+.image-container {
+    flex: 1;
+    text-align: right;
+}
+
+    .image-container img {
+        /*max-width: 100%;*/
+        height: auto;
+        border-radius: 10px;
+    }
+
+

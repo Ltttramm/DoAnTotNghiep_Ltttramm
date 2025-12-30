@@ -1,0 +1,59 @@
+﻿
+@{
+    ViewBag.Title = "Phân Tích Dinh Dưỡng";
+    ViewData["HideHeader"] = true;
+    ViewData["HideFooter"] = true;
+    string ingredient = Context.Request.QueryString["ingredient"];
+}
+
+<h2>Phân Tích Dinh Dưỡng</h2>
+
+<form id="nutritionForm">
+    <label>Nhập nguyên liệu:</label>
+    <input type="text" id="ingredient" name="ingredient" value="2eggs" required />
+    <button type="submit">Phân tích</button>
+</form>
+
+<div id="nutrition-result" style="display:none;">
+    <h3>Kết quả phân tích</h3>
+    <ul id="nutrient-list"></ul>
+</div>
+
+<div id="error-message" style="color:red;"></div>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+    $(document).ready(function () {
+        $("#nutritionForm").submit(function (event) {
+            event.preventDefault(); // Ngăn reload trang
+
+            var ingredient = $("#ingredient").val();
+
+            $.ajax({
+                url: "/AIMealPlanner/DietAnalysis",
+                type: "POST",
+                data: { ingredient: ingredient },
+                success: function (response) {
+                    if (response.error) {
+                        $("#error-message").text(response.error);
+                        $("#nutrition-result").hide();
+                    } else {
+                        $("#error-message").text("");
+                        $("#nutrition-result").show();
+                        $("#nutrient-list").empty();
+
+                        $.each(response.totalNutrients, function (key, value) {
+                            $("#nutrient-list").append(`<li><strong>${value.label}:</strong> ${value.quantity} ${value.unit}</li>`);
+                        });
+                    }
+                },
+                error: function () {
+                    $("#error-message").text("Có lỗi xảy ra. Vui lòng thử lại.");
+                }
+            });
+        });
+
+        // Tự động gửi request ban đầu với 2 eggs
+        $("#nutritionForm").submit();
+    });
+</script>

@@ -1,0 +1,232 @@
+﻿@using Newtonsoft.Json.Linq
+@{
+    ViewBag.Title = "Thực đơn tuần";
+    ViewData["HideFooter"] = true;
+    string keyword = Context.Request.QueryString["keyword"];
+    string selectedDiet = Context.Request.QueryString["diet"];
+    string selectedHealth = Context.Request.QueryString["health"];
+}
+
+<h2 class="text-2xl font-bold text-center text-[#C4A46B] mb-6 mt-[150px]">🍽️ Tìm Kiếm Thực Đơn</h2>
+@*<p><strong>Chỉ số TDEE của bạn:</strong> <span style="color: red; font-weight: bold;">@Model.TDEE kcal/ngày</span></p>*@
+<p><strong>TDEE của bạn:</strong> @ViewBag.TDEE kcal</p>
+
+<!-- Form tìm kiếm -->
+<form method="get" action="@Url.Action("MealPlan", "AIMealPlanner")" class="search-form">
+    <div class="filter-container">
+        <input type="text" name="keyword" placeholder="🥗 Nhập món ăn (vd: chicken)" class="form-control rounded" value="@keyword">
+        <input type="number" name="calories" placeholder="🔥 Calories (optional)" class="form-control rounded">
+        <select name="diet" class="form-control rounded">
+            <option value="" @(string.IsNullOrEmpty(selectedDiet) ? "selected" : "")>Chọn chế độ ăn</option>
+            <option value="balanced" @(selectedDiet == "balanced" ? "selected" : "")>Balanced</option>
+            <option value="high-protein" @(selectedDiet == "high-protein" ? "selected" : "")>High Protein</option>
+            <option value="low-carb" @(selectedDiet == "low-carb" ? "selected" : "")>Low Carb</option>
+            <option value="low-fat" @(selectedDiet == "low-fat" ? "selected" : "")>Low Fat</option>
+            <option value="low-sodium" @(selectedDiet == "low-sodium" ? "selected" : "")>Low-Sodium</option>
+            <option value="high-fiber" @(selectedDiet == "high-fiber" ? "selected" : "")>High-Fiber</option>
+            <option value="keto" @(selectedDiet == "keto" ? "selected" : "")>Keto</option>
+            <option value="paleo" @(selectedDiet == "paleo" ? "selected" : "")>Paleo</option>
+
+
+        </select>
+        <select name="health" class="form-control rounded">
+            <option value="" @(string.IsNullOrEmpty(selectedHealth) ? "selected" : "")>Chọn hạn chế ăn uống</option>
+            <option value="gluten-free" @(selectedHealth == "gluten-free" ? "selected" : "")>Gluten-Free</option>
+            <option value="vegan" @(selectedHealth == "vegan" ? "selected" : "")>Vegan</option>
+            <option value="vegetarian" @(selectedHealth == "vegetarian" ? "selected" : "")>Vegetarian</option>
+            <option value="dairy-free" @(selectedHealth == "dairy-free" ? "selected" : "")>Dairy-Free</option>
+            <option value="egg-free" @(selectedHealth == "egg-free" ? "selected" : "")>Egg-Free</option>
+            <option value="peanut-free" @(selectedHealth == "peanut-free" ? "selected" : "")>Peanut-Free</option>
+            <option value="tree-nut-free" @(selectedHealth == "tree-nut-free" ? "selected" : "")>Tree-Nut-Free</option>
+            <option value="soy-free" @(selectedHealth == "soy-free" ? "selected" : "")>Soy-Free</option>
+            <option value="fish-free" @(selectedHealth == "fish-free" ? "selected" : "")>Fish-Free</option>
+            <option value="shellfish-free" @(selectedHealth == "shellfish-free" ? "selected" : "")>Shellfish-Free</option>
+            <option value="pork-free" @(selectedHealth == "pork-free" ? "selected" : "")>Pork-Free</option>
+            <option value="alcohol-free" @(selectedHealth == "alcohol-free" ? "selected" : "")>Alcohol-Free</option>
+            <option value="sugar-conscious" @(selectedHealth == "sugar-conscious" ? "selected" : "")>Sugar-Conscious</option>
+            <option value="kosher" @(selectedHealth == "kosher" ? "selected" : "")>Kosher</option>
+
+
+        </select>
+        <button type="submit" class="btn btn-success rounded">🔎 Tìm kiếm</button>
+    </div>
+</form>
+
+@if (ViewBag.MealPlan != null)
+{
+    try
+    {
+        var mealData = JObject.Parse(ViewBag.MealPlan);
+
+        if (mealData.ContainsKey("hits"))
+        {
+            <div class="container">
+                <div class="row row-cols-1 row-cols-md-2 g-4">
+                    @foreach (var hit in mealData["hits"])
+                    {
+                        var recipe = hit["recipe"];
+                        var imageUrl = recipe["image"]?.ToString() ?? "/images/default.jpg";
+                        var url = recipe["url"]?.ToString() ?? "#";
+                        var ingredients = recipe["ingredientLines"] ?? new JArray();
+                        //var instructions = recipe["instructions"] ?? "Không có hướng dẫn.";
+
+                        <div class="col">
+                            <div class="card h-100 shadow-sm">
+                                <!-- Hình ảnh món ăn -->
+                                <div class="d-flex justify-content-center">
+                                    <img src="@imageUrl" class="card-img-top img-fluid food-image mx-auto d-block" alt="@recipe["label"]">
+                                </div>
+
+                                <!-- Nội dung món ăn -->
+                                <div class="card-body d-flex flex-column align-items-center">
+                                    <div class="content-container">
+                                        <h4 class="card-title font-weight-bold text-center fw-bold text-success">@recipe["label"]</h4>
+                                        <p><strong>Lượng calo:</strong> @recipe["calories"] kcal</p>
+
+                                        <div class="info-box">
+                                            <h6 class="fw-bold text-success">🌿 Nguyên liệu:</h6>
+                                            <ul class="list-unstyled">
+                                                @foreach (var ingredient in ingredients)
+                                                {
+                                                    <li>✔️ @ingredient</li>
+                                                }
+                                            </ul>
+                                        </div>
+
+                                        <div class="info-box">
+                                            <h6 class="fw-bold text-success">🍳 Cách nấu:</h6>
+                                            @*<p class="bg-light p-2">@instructions</p>*@
+                                            <a href="@url" target="_blank" class="btn btn-outline-primary">📖 Xem công thức</a>
+                                        </div>
+
+
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+        }
+        else
+        {
+            <p class="text-danger text-center">API không trả về danh sách món ăn.</p>
+        }
+    }
+    catch (Exception ex)
+    {
+        <p class="text-danger text-center">Lỗi khi xử lý dữ liệu: @ex.Message</p>
+    }
+}
+else
+{
+    <p class="text-warning text-center">Không thể tải thực đơn, vui lòng thử lại.</p>
+}
+
+<!-- CSS -->
+<style>
+    .search-form {
+        display: flex;
+        justify-content: center;
+        gap: 10px;
+        margin-bottom: 20px;
+    }
+
+    .filter-container {
+        display: flex;
+        gap: 10px;
+        align-items: center;
+    }
+
+    .form-control {
+        width: 200px;
+        padding: 8px;
+        border-radius: 15px;
+        border: 1px solid #ccc;
+    }
+
+    /* Căn tiêu đề thực đơn xuống 150px */
+    .title-menu {
+        margin-top: 150px;
+        text-align: center;
+    }
+
+    /* Hình ảnh món ăn */
+    .food-image {
+        height: 180px;
+        object-fit: cover;
+        border-radius: 10px;
+        display: block;
+        margin: 0 auto;
+    }
+
+    /* Hiệu ứng thẻ card */
+    .card {
+        border-radius: 15px;
+        transition: transform 0.2s ease-in-out, background-color 0.3s ease-in-out;
+    }
+
+        .card:hover {
+            transform: scale(1.05);
+            background-color: rgba(255, 255, 255, 0.3);
+        }
+
+    /* Căn nội dung nằm giữa card */
+    .card-body {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+
+    /* Đảm bảo nội dung có width fit-content nhưng vẫn căn giữa */
+    .content-container {
+        width: fit-content;
+        text-align: left;
+    }
+
+    /* Căn giữa div chứa Nguyên liệu, Lượng calo, Cách nấu */
+    .info-box {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        width: 100%;
+    }
+
+    /* Căn danh sách nguyên liệu vào giữa */
+    .list-unstyled {
+        display: flex;
+        flex-direction: column;
+    }
+
+    /* Chỉnh kích thước thẻ p trong cách nấu */
+    .bg-light {
+        border-radius: 8px;
+        padding: 10px;
+        width: 100%;
+    }
+
+    .btn {
+        width: 100%;
+        text-align: center;
+    }
+    /* Nút bấm */
+    .btn-success {
+        font-size: 14px; /* Tăng kích thước chữ */
+        font-weight: bold;
+        padding: 8px 10px; /* Tăng kích thước nút */
+        border-radius: 25px; /* Bo góc mềm mại */
+        width: 120px; /* Làm nút dài hơn */
+        background-color: #C4A46B; /* Màu xanh lá đậm hơn */
+        border: none; /* Loại bỏ viền */
+        transition: all 0.3s ease-in-out;
+    }
+
+        .btn-success:hover {
+            background-color: #A89F98; /* Màu khi hover */
+            transform: scale(1.05); /* Hiệu ứng phóng to nhẹ */
+        }
+    /* Chữ đậm */
+    .fw-bold {
+        font-weight: bold;
+    }
+</style>

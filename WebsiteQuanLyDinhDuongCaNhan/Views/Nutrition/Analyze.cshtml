@@ -1,0 +1,124 @@
+﻿@{
+    ViewBag.Title = "Phân tích dinh dưỡng";
+    ViewData["HideHeader"] = true;
+    ViewData["HideFooter"] = true;
+    string ingr = Request["ingredient"] ?? "";
+}
+
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>@ViewBag.Title</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body {
+            background-color: #f8f9fa;
+        }
+
+        .container {
+            margin-top: 20px;
+        }
+
+        .chart-container {
+            width: 50%;
+            margin: auto;
+        }
+
+        .mini-chart {
+            width: 30%;
+            display: inline-block;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2 class="text-center my-4">Phân tích dinh dưỡng</h2>
+        <form method="get" action="/Nutrition/Analyze" class="mb-4">
+            <div class="input-group">
+                <input type="text" id="ingredient" name="ingredient" class="form-control" placeholder="Nhập nguyên liệu" value="@ingr" />
+                <button type="submit" class="btn btn-primary">Phân tích</button>
+            </div>
+        </form>
+
+        @if (!string.IsNullOrEmpty(ViewBag.JsonData))
+        {
+            var jsonData = Newtonsoft.Json.JsonConvert.DeserializeObject<dynamic>(ViewBag.JsonData);
+            var ingredient = jsonData.ingredients[0].parsed[0];
+            double proteinKcal = 0, fatKcal = 0, carbsKcal = 0;
+
+            <div class="card p-4">
+                <h3 class="mb-3">Kết quả phân tích: @ingredient.food</h3>
+                <div class="chart-container">
+                    <canvas id="totalKcalChart"></canvas>
+                </div>
+                <div class="text-center mt-3">
+                    <h4><span id="totalKcal">0</span> CALORIES</h4>
+                </div>
+
+                <div class="d-flex justify-content-center mt-4">
+                    <div class="mini-chart">
+                        <canvas id="proteinChart"></canvas>
+                        <p class="text-center">Protein</p>
+                    </div>
+                    <div class="mini-chart">
+                        <canvas id="carbsChart"></canvas>
+                        <p class="text-center">Carbs</p>
+                    </div>
+                    <div class="mini-chart">
+                        <canvas id="fatChart"></canvas>
+                        <p class="text-center">Fat</p>
+                    </div>
+                </div>
+
+                @foreach (var nutrient in ingredient.nutrients)
+                {
+                    string nutrientLabel = nutrient.Value.label.ToString();
+                    double nutrientQuantity = Convert.ToDouble(nutrient.Value.quantity);
+                    if (nutrientLabel == "Protein") { proteinKcal = nutrientQuantity * 4; }
+                    if (nutrientLabel == "Total lipid (fat)") { fatKcal = nutrientQuantity * 9; }
+                    if (nutrientLabel == "Carbohydrate, by difference") { carbsKcal = nutrientQuantity * 4; }
+                }
+            </div>
+
+            <script>
+                document.addEventListener("DOMContentLoaded", function () {
+                    var totalKcal = @proteinKcal + @fatKcal + @carbsKcal;
+                    document.getElementById("totalKcal").innerText = totalKcal.toFixed(0);
+
+                    new Chart(document.getElementById("totalKcalChart"), {
+                        type: 'doughnut',
+                        data: {
+                            labels: ["Protein", "Carbs", "Fat"],
+                            datasets: [{
+                                data: [@proteinKcal, @carbsKcal, @fatKcal],
+                                backgroundColor: ["#4CAF50", "#FFCE56", "#FF6384"],
+                            }]
+                        }
+                    });
+
+                    function createMiniChart(id, value, color) {
+                        new Chart(document.getElementById(id), {
+                            type: 'doughnut',
+                            data: {
+                                labels: ["Kcal"],
+                                datasets: [{
+                                    data: [value, totalKcal - value],
+                                    backgroundColor: [color, "#ddd"],
+                                }]
+                            },
+                            options: { cutout: "80%" }
+                        });
+                    }
+
+                    createMiniChart("proteinChart", @proteinKcal, "#4CAF50");
+                    createMiniChart("carbsChart", @carbsKcal, "#FFCE56");
+                    createMiniChart("fatChart", @fatKcal, "#FF6384");
+                });
+            </script>
+        }
+    </div>
+</body>
+</html>
