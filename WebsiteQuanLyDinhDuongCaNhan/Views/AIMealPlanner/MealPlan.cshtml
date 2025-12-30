@@ -107,16 +107,16 @@
                                             <h6 class="fw-bold text-success">🌿 Nguyên liệu:</h6>
                                             <ul class="list-unstyled">
                                                 @{
-                                                    var ingredientList = ingredients.Cast<JToken>().Select(i => i.ToString()).ToList();
-                                                    var displayCount = Math.Min(5, ingredientList.Count);
+                                                    var ingredientArray = (JArray)ingredients;
+                                                    var displayCount = Math.Min(5, ingredientArray.Count);
                                                 }
                                                 @for (int i = 0; i < displayCount; i++)
                                                 {
-                                                    <li>✔️ @ingredientList[i]</li>
+                                                    <li>✔️ @ingredientArray[i].ToString()</li>
                                                 }
-                                                @if (ingredientList.Count > 5)
+                                                @if (ingredientArray.Count > 5)
                                                 {
-                                                    <li><em>... và @(ingredientList.Count - 5) nguyên liệu khác</em></li>
+                                                    <li><em>... và @(ingredientArray.Count - 5) nguyên liệu khác</em></li>
                                                 }
                                             </ul>
                                         </div>
