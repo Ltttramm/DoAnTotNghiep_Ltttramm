@@ -175,6 +175,7 @@
 //}
 
 using System;
+using System.Configuration;
 using System.Net.Http;
 using System.Threading.Tasks;
 using Newtonsoft.Json.Linq;
@@ -182,80 +183,129 @@ using System.Linq;
 
 public class EdamamService
 {
-    private readonly string appId = "71a46160";  // Thay bằng App ID của bạn
-    private readonly string apiKey = "7ee5fcd0bd05b97eb3e09594eef38189";  // Thay bằng API Key của bạn
-    private readonly string userId = "TramLe";  // UserID tùy chọn
+    private readonly string appId;
+    private readonly string apiKey;
+    private readonly string userId;
     private readonly string baseUrl = "https://api.edamam.com/api/recipes/v2?type=public";
+    private readonly int resultLimit;
+    private readonly int calorieBuffer;
 
+    public EdamamService()
+    {
+        // Load credentials from Web.config
+        appId = ConfigurationManager.AppSettings["EdamamAppId"];
+        apiKey = ConfigurationManager.AppSettings["EdamamApiKey"];
+        userId = ConfigurationManager.AppSettings["EdamamUserId"];
+        
+        // Load configuration with defaults
+        int.TryParse(ConfigurationManager.AppSettings["EdamamResultLimit"], out resultLimit);
+        if (resultLimit == 0) resultLimit = 100;
+        
+        int.TryParse(ConfigurationManager.AppSettings["EdamamCalorieBuffer"], out calorieBuffer);
+        if (calorieBuffer == 0) calorieBuffer = 200;
+    }
+
+    /// <summary>
+    /// Fetch meals from Edamam API based on TDEE calorie range
+    /// </summary>
+    public async Task<string> GetMealsByTDEEAsync(double tdee)
+    {
+        try
+        {
+            // Calculate calorie range based on TDEE with buffer
+            double minCalories = tdee - calorieBuffer;
+            double maxCalories = tdee + calorieBuffer;
+
+            string url = $"{baseUrl}&app_id={appId}&app_key={apiKey}";
+            url += $"&calories={minCalories:F0}-{maxCalories:F0}";
+            url += $"&to={resultLimit}"; // Limit number of results
+
+            Console.WriteLine("URL gọi API (TDEE-based): " + url);
+
+            using (HttpClient client = new HttpClient())
+            {
+                if (!string.IsNullOrEmpty(userId))
+                {
+                    client.DefaultRequestHeaders.Add("Edamam-Account-User", userId);
+                }
+
+                HttpResponseMessage response = await client.GetAsync(url);
+
+                if (!response.IsSuccessStatusCode)
+                {
+                    string errorContent = await response.Content.ReadAsStringAsync();
+                    Console.WriteLine($"Lỗi API: {response.StatusCode} - {errorContent}");
+                    return "{\"error\": \"Không thể kết nối đến dịch vụ tìm kiếm món ăn\"}";
+                }
+
+                string jsonData = await response.Content.ReadAsStringAsync();
+                Console.WriteLine($"API trả về {JObject.Parse(jsonData)["hits"]?.Count() ?? 0} món ăn");
+                return jsonData;
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine("Lỗi xảy ra trong GetMealsByTDEEAsync: " + ex.Message);
+            return "{\"error\": \"Đã xảy ra lỗi khi tải danh sách món ăn\"}";
+        }
+    }
+
+    /// <summary>
+    /// Legacy method - kept for backward compatibility
+    /// </summary>
     public async Task<string> GetMealPlanAsync(string keyword = "", double? calories = null, string diet = "", string health = "")
     {
         try
         {
             string url = $"{baseUrl}&app_id={appId}&app_key={apiKey}";
 
-            // Chỉ thêm keyword nếu người dùng nhập
             if (!string.IsNullOrWhiteSpace(keyword))
             {
                 url += $"&q={keyword}";
             }
 
-            // Thêm giới hạn kcal nếu có
             if (calories.HasValue)
             {
-                url += $"&calories={(calories.Value - 100):F0}-{(calories.Value + 100):F0}";
+                url += $"&calories={(calories.Value - calorieBuffer):F0}-{(calories.Value + calorieBuffer):F0}";
             }
 
-            // Thêm chế độ ăn nếu có
             if (!string.IsNullOrEmpty(diet))
             {
                 url += $"&diet={diet}";
             }
 
-            // Thêm hạn chế ăn uống nếu có
             if (!string.IsNullOrEmpty(health))
             {
                 url += $"&health={health}";
             }
 
-            Console.WriteLine("URL gọi API: " + url); // Debug URL
+            url += $"&to={resultLimit}";
+
+            Console.WriteLine("URL gọi API: " + url);
 
             using (HttpClient client = new HttpClient())
             {
-                client.DefaultRequestHeaders.Add("Edamam-Account-User", userId);
+                if (!string.IsNullOrEmpty(userId))
+                {
+                    client.DefaultRequestHeaders.Add("Edamam-Account-User", userId);
+                }
+
                 HttpResponseMessage response = await client.GetAsync(url);
 
                 if (!response.IsSuccessStatusCode)
                 {
                     Console.WriteLine($"Lỗi API: {response.StatusCode} - {await response.Content.ReadAsStringAsync()}");
-                    return "{}"; // Trả về JSON rỗng nếu API lỗi
+                    return "{}";
                 }
 
                 string jsonData = await response.Content.ReadAsStringAsync();
-                JObject data = JObject.Parse(jsonData);
-
-                // Lọc lại danh sách món ăn có calories nằm trong khoảng mong muốn
-                if (calories.HasValue && data["hits"] != null)
-                {
-                    var hitsList = ((JArray)data["hits"]).ToList();
-
-                    hitsList = hitsList
-                        .Where(hit => hit["recipe"]?["calories"] != null &&
-                                      (double)hit["recipe"]["calories"] >= calories.Value - 50 &&
-                                      (double)hit["recipe"]["calories"] <= calories.Value + 50)
-                        .ToList();
-
-                    data["hits"] = JArray.FromObject(hitsList); // Cập nhật danh sách đã lọc
-                }
-
-                string filteredJson = data.ToString();
-                Console.WriteLine("Dữ liệu JSON sau khi lọc: " + filteredJson);
-                return filteredJson;
+                return jsonData;
             }
         }
         catch (Exception ex)
         {
             Console.WriteLine("Lỗi xảy ra: " + ex.Message);
-            return "{}"; // Trả về JSON rỗng nếu có lỗi bất thường
+            return "{}";
         }
     }
 

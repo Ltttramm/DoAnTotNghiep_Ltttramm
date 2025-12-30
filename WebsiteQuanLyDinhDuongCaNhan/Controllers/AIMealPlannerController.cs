@@ -21,33 +21,46 @@ public class AIMealPlannerController : Controller
     }
 
     [Route("AIMealPlanner/MealPlan")]
-    public async Task<ActionResult> MealPlan(string keyword = "chicken", double? calories = null, string diet = "", string health = "")
+    public async Task<ActionResult> MealPlan()
     {
-        // Lấy thông tin người dùng từ database/session
-        User user = GetCurrentUser();
-
-        if (user == null)
+        try
         {
-            return RedirectToAction("Login", "Auth"); // Chuyển hướng nếu chưa đăng nhập
+            // Lấy thông tin người dùng từ database/session
+            User user = GetCurrentUser();
+
+            if (user == null)
+            {
+                return RedirectToAction("Login", "Auth");
+            }
+
+            // Tính TDEE
+            double tdee = _userService.CalculateTDEE(user);
+            ViewBag.TDEE = tdee;
+
+            // Automatically load meals based on TDEE on page load
+            string mealPlanJson = await _edamamService.GetMealsByTDEEAsync(tdee);
+
+            // Pass all meals to view for client-side filtering
+            if (!string.IsNullOrWhiteSpace(mealPlanJson) && !mealPlanJson.Contains("\"error\""))
+            {
+                ViewBag.MealPlan = mealPlanJson;
+                ViewBag.ErrorMessage = null;
+            }
+            else
+            {
+                ViewBag.MealPlan = null;
+                ViewBag.ErrorMessage = "Không thể tải danh sách món ăn. Vui lòng thử lại sau.";
+            }
+
+            return View("MealPlan");
         }
-
-        // Tính TDEE
-        double tdee = _userService.CalculateTDEE(user);
-        ViewBag.TDEE = tdee; // Lưu giá trị TDEE vào ViewBag để hiển thị trên giao diện
-
-        // Gọi API lấy meal plan (giữ nguyên cách gọi từ code cũ)
-        string mealPlanJson = await _edamamService.GetMealPlanAsync(keyword, calories, diet, health);
-
-        if (!string.IsNullOrWhiteSpace(mealPlanJson) && mealPlanJson != "{}")
+        catch (Exception ex)
         {
-            ViewBag.MealPlan = mealPlanJson;
-        }
-        else
-        {
+            Console.WriteLine($"Lỗi trong MealPlan controller: {ex.Message}");
             ViewBag.MealPlan = null;
+            ViewBag.ErrorMessage = "Đã xảy ra lỗi. Vui lòng thử lại.";
+            return View("MealPlan");
         }
-
-        return View("MealPlan");
     }
 
     private User GetCurrentUser()

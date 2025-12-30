@@ -2,55 +2,57 @@
 @{
     ViewBag.Title = "Thực đơn tuần";
     ViewData["HideFooter"] = true;
-    string keyword = Context.Request.QueryString["keyword"];
-    string selectedDiet = Context.Request.QueryString["diet"];
-    string selectedHealth = Context.Request.QueryString["health"];
 }
 
 <h2 class="text-2xl font-bold text-center text-[#C4A46B] mb-6 mt-[150px]">🍽️ Tìm Kiếm Thực Đơn</h2>
-@*<p><strong>Chỉ số TDEE của bạn:</strong> <span style="color: red; font-weight: bold;">@Model.TDEE kcal/ngày</span></p>*@
 <p><strong>TDEE của bạn:</strong> @ViewBag.TDEE kcal</p>
 
-<!-- Form tìm kiếm -->
-<form method="get" action="@Url.Action("MealPlan", "AIMealPlanner")" class="search-form">
+@if (ViewBag.ErrorMessage != null)
+{
+    <div class="alert alert-danger text-center">
+        <strong>⚠️ Lỗi:</strong> @ViewBag.ErrorMessage
+    </div>
+}
+
+<!-- Form tìm kiếm (Client-side filtering) -->
+<form id="filterForm" class="search-form" onsubmit="return false;">
     <div class="filter-container">
-        <input type="text" name="keyword" placeholder="🥗 Nhập món ăn (vd: chicken)" class="form-control rounded" value="@keyword">
-        <input type="number" name="calories" placeholder="🔥 Calories (optional)" class="form-control rounded">
-        <select name="diet" class="form-control rounded">
-            <option value="" @(string.IsNullOrEmpty(selectedDiet) ? "selected" : "")>Chọn chế độ ăn</option>
-            <option value="balanced" @(selectedDiet == "balanced" ? "selected" : "")>Balanced</option>
-            <option value="high-protein" @(selectedDiet == "high-protein" ? "selected" : "")>High Protein</option>
-            <option value="low-carb" @(selectedDiet == "low-carb" ? "selected" : "")>Low Carb</option>
-            <option value="low-fat" @(selectedDiet == "low-fat" ? "selected" : "")>Low Fat</option>
-            <option value="low-sodium" @(selectedDiet == "low-sodium" ? "selected" : "")>Low-Sodium</option>
-            <option value="high-fiber" @(selectedDiet == "high-fiber" ? "selected" : "")>High-Fiber</option>
-            <option value="keto" @(selectedDiet == "keto" ? "selected" : "")>Keto</option>
-            <option value="paleo" @(selectedDiet == "paleo" ? "selected" : "")>Paleo</option>
-
-
+        <input type="text" id="keywordInput" placeholder="🥗 Nhập món ăn (vd: chicken)" class="form-control rounded">
+        <input type="number" id="caloriesInput" placeholder="🔥 Calories (optional)" class="form-control rounded">
+        <select id="dietSelect" class="form-control rounded">
+            <option value="">Chọn chế độ ăn</option>
+            <option value="balanced">Balanced</option>
+            <option value="high-protein">High Protein</option>
+            <option value="low-carb">Low Carb</option>
+            <option value="low-fat">Low Fat</option>
+            <option value="low-sodium">Low-Sodium</option>
+            <option value="high-fiber">High-Fiber</option>
+            <option value="keto">Keto</option>
+            <option value="paleo">Paleo</option>
         </select>
-        <select name="health" class="form-control rounded">
-            <option value="" @(string.IsNullOrEmpty(selectedHealth) ? "selected" : "")>Chọn hạn chế ăn uống</option>
-            <option value="gluten-free" @(selectedHealth == "gluten-free" ? "selected" : "")>Gluten-Free</option>
-            <option value="vegan" @(selectedHealth == "vegan" ? "selected" : "")>Vegan</option>
-            <option value="vegetarian" @(selectedHealth == "vegetarian" ? "selected" : "")>Vegetarian</option>
-            <option value="dairy-free" @(selectedHealth == "dairy-free" ? "selected" : "")>Dairy-Free</option>
-            <option value="egg-free" @(selectedHealth == "egg-free" ? "selected" : "")>Egg-Free</option>
-            <option value="peanut-free" @(selectedHealth == "peanut-free" ? "selected" : "")>Peanut-Free</option>
-            <option value="tree-nut-free" @(selectedHealth == "tree-nut-free" ? "selected" : "")>Tree-Nut-Free</option>
-            <option value="soy-free" @(selectedHealth == "soy-free" ? "selected" : "")>Soy-Free</option>
-            <option value="fish-free" @(selectedHealth == "fish-free" ? "selected" : "")>Fish-Free</option>
-            <option value="shellfish-free" @(selectedHealth == "shellfish-free" ? "selected" : "")>Shellfish-Free</option>
-            <option value="pork-free" @(selectedHealth == "pork-free" ? "selected" : "")>Pork-Free</option>
-            <option value="alcohol-free" @(selectedHealth == "alcohol-free" ? "selected" : "")>Alcohol-Free</option>
-            <option value="sugar-conscious" @(selectedHealth == "sugar-conscious" ? "selected" : "")>Sugar-Conscious</option>
-            <option value="kosher" @(selectedHealth == "kosher" ? "selected" : "")>Kosher</option>
-
-
+        <select id="healthSelect" class="form-control rounded">
+            <option value="">Chọn hạn chế ăn uống</option>
+            <option value="gluten-free">Gluten-Free</option>
+            <option value="vegan">Vegan</option>
+            <option value="vegetarian">Vegetarian</option>
+            <option value="dairy-free">Dairy-Free</option>
+            <option value="egg-free">Egg-Free</option>
+            <option value="peanut-free">Peanut-Free</option>
+            <option value="tree-nut-free">Tree-Nut-Free</option>
+            <option value="soy-free">Soy-Free</option>
+            <option value="fish-free">Fish-Free</option>
+            <option value="shellfish-free">Shellfish-Free</option>
+            <option value="pork-free">Pork-Free</option>
+            <option value="alcohol-free">Alcohol-Free</option>
+            <option value="sugar-conscious">Sugar-Conscious</option>
+            <option value="kosher">Kosher</option>
         </select>
-        <button type="submit" class="btn btn-success rounded">🔎 Tìm kiếm</button>
+        <button type="button" onclick="filterMeals()" class="btn btn-success rounded">🔎 Tìm kiếm</button>
+        <button type="button" onclick="resetFilters()" class="btn btn-secondary rounded">🔄 Reset</button>
     </div>
 </form>
+
+<p id="resultCount" class="text-center text-muted mt-2"></p>
 
 @if (ViewBag.MealPlan != null)
 {
@@ -60,46 +62,56 @@
 
         if (mealData.ContainsKey("hits"))
         {
-            <div class="container">
-                <div class="row row-cols-1 row-cols-md-2 g-4">
+            <div id="mealsContainer" class="container">
+                <div class="row row-cols-1 row-cols-md-2 g-4" id="mealCards">
                     @foreach (var hit in mealData["hits"])
                     {
                         var recipe = hit["recipe"];
                         var imageUrl = recipe["image"]?.ToString() ?? "/images/default.jpg";
                         var url = recipe["url"]?.ToString() ?? "#";
                         var ingredients = recipe["ingredientLines"] ?? new JArray();
-                        //var instructions = recipe["instructions"] ?? "Không có hướng dẫn.";
+                        var label = recipe["label"]?.ToString() ?? "";
+                        var calories = recipe["calories"]?.ToString() ?? "0";
+                        
+                        // Extract diet and health labels for filtering
+                        var dietLabels = recipe["dietLabels"] != null ? string.Join(",", recipe["dietLabels"].Select(d => d.ToString().ToLower())) : "";
+                        var healthLabels = recipe["healthLabels"] != null ? string.Join(",", recipe["healthLabels"].Select(h => h.ToString().ToLower())) : "";
 
-                        <div class="col">
+                        <div class="col meal-card" 
+                             data-label="@label.ToLower()" 
+                             data-calories="@calories"
+                             data-diet="@dietLabels"
+                             data-health="@healthLabels">
                             <div class="card h-100 shadow-sm">
                                 <!-- Hình ảnh món ăn -->
                                 <div class="d-flex justify-content-center">
-                                    <img src="@imageUrl" class="card-img-top img-fluid food-image mx-auto d-block" alt="@recipe["label"]">
+                                    <img src="@imageUrl" class="card-img-top img-fluid food-image mx-auto d-block" alt="@label">
                                 </div>
 
                                 <!-- Nội dung món ăn -->
                                 <div class="card-body d-flex flex-column align-items-center">
                                     <div class="content-container">
-                                        <h4 class="card-title font-weight-bold text-center fw-bold text-success">@recipe["label"]</h4>
-                                        <p><strong>Lượng calo:</strong> @recipe["calories"] kcal</p>
+                                        <h4 class="card-title font-weight-bold text-center fw-bold text-success">@label</h4>
+                                        <p><strong>Lượng calo:</strong> @((int)double.Parse(calories)) kcal</p>
 
                                         <div class="info-box">
                                             <h6 class="fw-bold text-success">🌿 Nguyên liệu:</h6>
                                             <ul class="list-unstyled">
-                                                @foreach (var ingredient in ingredients)
+                                                @foreach (var ingredient in ingredients.Take(5))
                                                 {
                                                     <li>✔️ @ingredient</li>
+                                                }
+                                                @if (ingredients.Count() > 5)
+                                                {
+                                                    <li><em>... và @(ingredients.Count() - 5) nguyên liệu khác</em></li>
                                                 }
                                             </ul>
                                         </div>
 
                                         <div class="info-box">
                                             <h6 class="fw-bold text-success">🍳 Cách nấu:</h6>
-                                            @*<p class="bg-light p-2">@instructions</p>*@
                                             <a href="@url" target="_blank" class="btn btn-outline-primary">📖 Xem công thức</a>
                                         </div>
-
-
                                     </div>
                                 </div>
                             </div>
@@ -107,6 +119,93 @@
                     }
                 </div>
             </div>
+            
+            <script>
+                // Store all meals data for filtering
+                let allMeals = @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(mealData["hits"]));
+                let totalMeals = allMeals.length;
+                
+                // Display initial count
+                document.getElementById('resultCount').textContent = `Hiển thị ${totalMeals} món ăn phù hợp với TDEE của bạn`;
+
+                function filterMeals() {
+                    const keyword = document.getElementById('keywordInput').value.toLowerCase().trim();
+                    const calories = document.getElementById('caloriesInput').value;
+                    const diet = document.getElementById('dietSelect').value.toLowerCase();
+                    const health = document.getElementById('healthSelect').value.toLowerCase();
+
+                    const mealCards = document.querySelectorAll('.meal-card');
+                    let visibleCount = 0;
+
+                    mealCards.forEach(card => {
+                        let show = true;
+
+                        // Filter by keyword (search in label)
+                        if (keyword && !card.dataset.label.includes(keyword)) {
+                            show = false;
+                        }
+
+                        // Filter by calories (±100 range)
+                        if (calories) {
+                            const cardCalories = parseFloat(card.dataset.calories);
+                            const targetCalories = parseFloat(calories);
+                            if (cardCalories < targetCalories - 100 || cardCalories > targetCalories + 100) {
+                                show = false;
+                            }
+                        }
+
+                        // Filter by diet
+                        if (diet && !card.dataset.diet.includes(diet)) {
+                            show = false;
+                        }
+
+                        // Filter by health
+                        if (health && !card.dataset.health.includes(health)) {
+                            show = false;
+                        }
+
+                        // Show or hide card
+                        card.style.display = show ? 'block' : 'none';
+                        if (show) visibleCount++;
+                    });
+
+                    // Update result count
+                    document.getElementById('resultCount').textContent = 
+                        `Hiển thị ${visibleCount} / ${totalMeals} món ăn`;
+
+                    // Show message if no results
+                    if (visibleCount === 0) {
+                        document.getElementById('resultCount').textContent = 
+                            '❌ Không tìm thấy món ăn phù hợp. Hãy thử thay đổi bộ lọc.';
+                        document.getElementById('resultCount').style.color = 'red';
+                    } else {
+                        document.getElementById('resultCount').style.color = '#6c757d';
+                    }
+                }
+
+                function resetFilters() {
+                    document.getElementById('keywordInput').value = '';
+                    document.getElementById('caloriesInput').value = '';
+                    document.getElementById('dietSelect').selectedIndex = 0;
+                    document.getElementById('healthSelect').selectedIndex = 0;
+
+                    // Show all cards
+                    document.querySelectorAll('.meal-card').forEach(card => {
+                        card.style.display = 'block';
+                    });
+
+                    document.getElementById('resultCount').textContent = 
+                        `Hiển thị ${totalMeals} món ăn phù hợp với TDEE của bạn`;
+                    document.getElementById('resultCount').style.color = '#6c757d';
+                }
+
+                // Allow Enter key to trigger search
+                document.getElementById('keywordInput').addEventListener('keypress', function(e) {
+                    if (e.key === 'Enter') {
+                        filterMeals();
+                    }
+                });
+            </script>
         }
         else
         {
@@ -120,7 +219,7 @@
 }
 else
 {
-    <p class="text-warning text-center">Không thể tải thực đơn, vui lòng thử lại.</p>
+    <p class="text-warning text-center">Đang tải danh sách món ăn...</p>
 }
 
 <!-- CSS -->
@@ -129,17 +228,19 @@ else
         display: flex;
         justify-content: center;
         gap: 10px;
-        margin-bottom: 20px;
+        margin-bottom: 10px;
     }
 
     .filter-container {
         display: flex;
         gap: 10px;
         align-items: center;
+        flex-wrap: wrap;
+        justify-content: center;
     }
 
     .form-control {
-        width: 200px;
+        width: 180px;
         padding: 8px;
         border-radius: 15px;
         border: 1px solid #ccc;
@@ -154,6 +255,7 @@ else
     /* Hình ảnh món ăn */
     .food-image {
         height: 180px;
+        width: 100%;
         object-fit: cover;
         border-radius: 10px;
         display: block;
@@ -166,10 +268,10 @@ else
         transition: transform 0.2s ease-in-out, background-color 0.3s ease-in-out;
     }
 
-        .card:hover {
-            transform: scale(1.05);
-            background-color: rgba(255, 255, 255, 0.3);
-        }
+    .card:hover {
+        transform: scale(1.05);
+        background-color: rgba(255, 255, 255, 0.3);
+    }
 
     /* Căn nội dung nằm giữa card */
     .card-body {
@@ -190,6 +292,7 @@ else
         flex-direction: column;
         align-items: center;
         width: 100%;
+        margin-bottom: 10px;
     }
 
     /* Căn danh sách nguyên liệu vào giữa */
@@ -206,27 +309,70 @@ else
     }
 
     .btn {
-        width: 100%;
         text-align: center;
     }
+
     /* Nút bấm */
     .btn-success {
-        font-size: 14px; /* Tăng kích thước chữ */
+        font-size: 14px;
         font-weight: bold;
-        padding: 8px 10px; /* Tăng kích thước nút */
-        border-radius: 25px; /* Bo góc mềm mại */
-        width: 120px; /* Làm nút dài hơn */
-        background-color: #C4A46B; /* Màu xanh lá đậm hơn */
-        border: none; /* Loại bỏ viền */
+        padding: 8px 10px;
+        border-radius: 25px;
+        min-width: 120px;
+        background-color: #C4A46B;
+        border: none;
         transition: all 0.3s ease-in-out;
     }
 
-        .btn-success:hover {
-            background-color: #A89F98; /* Màu khi hover */
-            transform: scale(1.05); /* Hiệu ứng phóng to nhẹ */
-        }
+    .btn-success:hover {
+        background-color: #A89F98;
+        transform: scale(1.05);
+    }
+
+    .btn-secondary {
+        font-size: 14px;
+        font-weight: bold;
+        padding: 8px 10px;
+        border-radius: 25px;
+        min-width: 120px;
+        background-color: #6c757d;
+        border: none;
+        transition: all 0.3s ease-in-out;
+    }
+
+    .btn-secondary:hover {
+        background-color: #5a6268;
+        transform: scale(1.05);
+    }
+
     /* Chữ đậm */
     .fw-bold {
         font-weight: bold;
+    }
+
+    /* Result count styling */
+    #resultCount {
+        font-size: 16px;
+        font-weight: 600;
+        margin-bottom: 20px;
+    }
+
+    /* Alert styling */
+    .alert {
+        padding: 15px;
+        margin: 20px auto;
+        border-radius: 10px;
+        max-width: 600px;
+    }
+
+    .alert-danger {
+        background-color: #f8d7da;
+        border: 1px solid #f5c6cb;
+        color: #721c24;
+    }
+
+    /* Loading and meal card animations */
+    .meal-card {
+        transition: opacity 0.3s ease-in-out;
     }
 </style>
