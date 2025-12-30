@@ -74,8 +74,8 @@
                         var calories = recipe["calories"]?.ToString() ?? "0";
                         
                         // Extract diet and health labels for filtering
-                        var dietLabels = recipe["dietLabels"] != null ? string.Join(",", recipe["dietLabels"].Select(d => d.ToString().ToLower())) : "";
-                        var healthLabels = recipe["healthLabels"] != null ? string.Join(",", recipe["healthLabels"].Select(h => h.ToString().ToLower())) : "";
+                        var dietLabels = recipe["dietLabels"] != null ? string.Join(",", ((JArray)recipe["dietLabels"]).Select(d => d.ToString().ToLower())) : "";
+                        var healthLabels = recipe["healthLabels"] != null ? string.Join(",", ((JArray)recipe["healthLabels"]).Select(h => h.ToString().ToLower())) : "";
 
                         <div class="col meal-card" 
                              data-label="@label.ToLower()" 
