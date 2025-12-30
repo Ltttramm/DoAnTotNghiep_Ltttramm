@@ -91,8 +91,8 @@
                              data-health="@healthLabels">
                             <div class="card h-100 shadow-sm">
                                 <!-- Hình ảnh món ăn -->
-                                <div class="d-flex justify-content-center">
-                                    <img src="@imageUrl" class="card-img-top img-fluid food-image mx-auto d-block" alt="@label">
+                                <div class="image-container">
+                                    <img src="@imageUrl" class="food-image" alt="@label">
                                 </div>
 
                                 <!-- Nội dung món ăn -->
@@ -106,13 +106,17 @@
                                         <div class="info-box">
                                             <h6 class="fw-bold text-success">🌿 Nguyên liệu:</h6>
                                             <ul class="list-unstyled">
-                                                @foreach (var ingredient in ingredients.Take(5))
-                                                {
-                                                    <li>✔️ @ingredient</li>
+                                                @{
+                                                    var ingredientList = ingredients.Cast<JToken>().Select(i => i.ToString()).ToList();
+                                                    var displayCount = Math.Min(5, ingredientList.Count);
                                                 }
-                                                @if (ingredients.Count() > 5)
+                                                @for (int i = 0; i < displayCount; i++)
                                                 {
-                                                    <li><em>... và @(ingredients.Count() - 5) nguyên liệu khác</em></li>
+                                                    <li>✔️ @ingredientList[i]</li>
+                                                }
+                                                @if (ingredientList.Count > 5)
+                                                {
+                                                    <li><em>... và @(ingredientList.Count - 5) nguyên liệu khác</em></li>
                                                 }
                                             </ul>
                                         </div>
@@ -261,14 +265,27 @@ else
         text-align: center;
     }
 
-    /* Hình ảnh món ăn */
+    /* Image container for consistent height and centering */
+    .image-container {
+        min-height: 200px;
+        max-height: 250px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 15px;
+        background-color: #f8f9fa;
+        border-radius: 10px 10px 0 0;
+    }
+
+    /* Hình ảnh món ăn - centered and not stretched */
     .food-image {
-        height: 180px;
-        width: 100%;
-        object-fit: cover;
-        border-radius: 10px;
+        max-height: 200px;
+        max-width: 100%;
+        width: auto;
+        height: auto;
+        object-fit: contain; /* Maintains aspect ratio without stretching */
+        border-radius: 8px;
         display: block;
-        margin: 0 auto;
     }
 
     /* Hiệu ứng thẻ card */
