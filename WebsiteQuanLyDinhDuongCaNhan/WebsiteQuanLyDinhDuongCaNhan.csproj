@@ -350,7 +350,7 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Services\MealOptimizationService.cs" />
     <Compile Include="Services\MealSuggestionService.cs" />
-    <Compile Include="Services\EdamamService.cs" />
+    <Compile Include="Services\SpoonacularService.cs" />
     <Compile Include="Services\NutritionAnalysisService.cs" />
     <Compile Include="Services\UserService.cs" />
     <Compile Include="Startup.cs" />
