@@ -6,26 +6,40 @@ using Newtonsoft.Json.Linq;
 
 public class NutritionAnalysisService
 {
-    public async Task<JObject> GetNutritionInfoAsync(string ingredient="")
+    private readonly SpoonacularService _spoonacularService;
+
+    public NutritionAnalysisService()
     {
-        string url = $"https://api.edamam.com/api/nutrition-data?app_id=26a45bf8&app_key=72311f618c619600f6d6e59358a19358&ingr={ingredient}";
+        _spoonacularService = new SpoonacularService();
+    }
 
-        using (HttpClient client = new HttpClient())
+    public async Task<JObject> GetNutritionInfoAsync(string ingredient = "")
+    {
+        try
         {
-            HttpResponseMessage response = await client.GetAsync(url);
-
-            if (response.IsSuccessStatusCode)
+            if (string.IsNullOrWhiteSpace(ingredient))
             {
-                string json = await response.Content.ReadAsStringAsync();
-                System.Diagnostics.Debug.WriteLine("API JSON: " + json); // Debug JSON
-                return JObject.Parse(json);
+                return null;
+            }
+
+            // Use Spoonacular to get ingredient nutrition
+            string jsonResponse = await _spoonacularService.SearchIngredientNutritionAsync(ingredient);
+            
+            if (!jsonResponse.Contains("\"error\""))
+            {
+                System.Diagnostics.Debug.WriteLine("Spoonacular API JSON: " + jsonResponse);
+                return JObject.Parse(jsonResponse);
             }
             else
             {
-                System.Diagnostics.Debug.WriteLine("API Error: " + response.StatusCode);
+                System.Diagnostics.Debug.WriteLine("Spoonacular API Error");
                 return null;
             }
         }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine("Error in GetNutritionInfoAsync: " + ex.Message);
+            return null;
+        }
     }
-
 }
