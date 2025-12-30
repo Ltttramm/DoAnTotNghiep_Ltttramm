@@ -38,14 +38,14 @@ public class AIMealPlannerController : Controller
             ViewBag.TDEE = tdee;
 
             // Debug logging
-            Console.WriteLine($"[DEBUG] User TDEE: {tdee}");
+            System.Diagnostics.Debug.WriteLine($"[DEBUG] User TDEE: {tdee}");
 
             // Generate daily meal plan (3 meals) based on TDEE using Spoonacular
             string mealPlanJson = await _spoonacularService.GenerateDailyMealPlanAsync(tdee);
 
             // Debug logging
-            Console.WriteLine($"[DEBUG] Spoonacular Response Length: {mealPlanJson?.Length ?? 0}");
-            Console.WriteLine($"[DEBUG] Spoonacular Response: {mealPlanJson}");
+            System.Diagnostics.Debug.WriteLine($"[DEBUG] Spoonacular Response Length: {mealPlanJson?.Length ?? 0}");
+            System.Diagnostics.Debug.WriteLine($"[DEBUG] Spoonacular Response: {mealPlanJson}");
 
             // Pass meal plan to view
             if (!string.IsNullOrWhiteSpace(mealPlanJson) && !mealPlanJson.Contains("\"error\""))

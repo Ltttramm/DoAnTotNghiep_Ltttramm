@@ -14,6 +14,7 @@ public class SpoonacularService
     {
         // Load API key from Web.config
         apiKey = ConfigurationManager.AppSettings["SpoonacularApiKey"];
+        System.Diagnostics.Debug.WriteLine($"[DEBUG] Spoonacular API Key (Service Init): {apiKey}");
     }
 
     /// <summary>
