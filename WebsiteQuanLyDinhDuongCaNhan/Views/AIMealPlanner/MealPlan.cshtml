@@ -5,7 +5,10 @@
 }
 
 <h2 class="text-2xl font-bold text-center text-[#C4A46B] mb-6 mt-[150px]">🍽️ Tìm Kiếm Thực Đơn</h2>
-<p><strong>TDEE của bạn:</strong> @ViewBag.TDEE kcal</p>
+<div class="text-center mb-3">
+    <p><strong>TDEE của bạn:</strong> <span class="text-primary fw-bold">@ViewBag.TDEE kcal/ngày</span></p>
+    <p class="text-muted small">💡 Gợi ý: Mỗi bữa ăn nên có khoảng <strong>@((int)(ViewBag.TDEE / 3)) kcal</strong> (TDEE chia 3 bữa)</p>
+</div>
 
 @if (ViewBag.ErrorMessage != null)
 {
@@ -71,7 +74,11 @@
                         var url = recipe["url"]?.ToString() ?? "#";
                         var ingredients = recipe["ingredientLines"] ?? new JArray();
                         var label = recipe["label"]?.ToString() ?? "";
-                        var calories = recipe["calories"]?.ToString() ?? "0";
+                        
+                        // Calculate calories per serving
+                        double totalCalories = double.Parse(recipe["calories"]?.ToString() ?? "0");
+                        double servings = double.Parse(recipe["yield"]?.ToString() ?? "1");
+                        double caloriesPerServing = totalCalories / servings;
                         
                         // Extract diet and health labels for filtering
                         var dietLabels = recipe["dietLabels"] != null ? string.Join(",", ((JArray)recipe["dietLabels"]).Select(d => d.ToString().ToLower())) : "";
@@ -79,7 +86,7 @@
 
                         <div class="col meal-card" 
                              data-label="@label.ToLower()" 
-                             data-calories="@calories"
+                             data-calories="@caloriesPerServing"
                              data-diet="@dietLabels"
                              data-health="@healthLabels">
                             <div class="card h-100 shadow-sm">
@@ -92,7 +99,9 @@
                                 <div class="card-body d-flex flex-column align-items-center">
                                     <div class="content-container">
                                         <h4 class="card-title font-weight-bold text-center fw-bold text-success">@label</h4>
-                                        <p><strong>Lượng calo:</strong> @((int)double.Parse(calories)) kcal</p>
+                                        <p><strong>🍽️ Khẩu phần:</strong> @((int)servings) người</p>
+                                        <p><strong>🔥 Calo/người:</strong> <span class="text-primary fw-bold">@((int)caloriesPerServing) kcal</span></p>
+                                        <p class="text-muted small"><em>(Tổng: @((int)totalCalories) kcal)</em></p>
 
                                         <div class="info-box">
                                             <h6 class="fw-bold text-success">🌿 Nguyên liệu:</h6>

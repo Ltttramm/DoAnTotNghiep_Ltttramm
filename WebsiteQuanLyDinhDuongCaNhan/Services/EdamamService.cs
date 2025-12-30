@@ -207,20 +207,24 @@ public class EdamamService
 
     /// <summary>
     /// Fetch meals from Edamam API based on TDEE calorie range
+    /// Searches for recipes where calories per serving matches a single meal portion (TDEE/3)
     /// </summary>
     public async Task<string> GetMealsByTDEEAsync(double tdee)
     {
         try
         {
-            // Calculate calorie range based on TDEE with buffer
-            double minCalories = tdee - calorieBuffer;
-            double maxCalories = tdee + calorieBuffer;
+            // Calculate appropriate calories for a single meal (divide TDEE by 3 meals per day)
+            double mealCalories = tdee / 3;
+            double minCalories = mealCalories - 150;  // ±150 range for flexibility
+            double maxCalories = mealCalories + 150;
 
+            // Use a wider range for initial API search to get more results
             string url = $"{baseUrl}&app_id={appId}&app_key={apiKey}";
-            url += $"&calories={minCalories:F0}-{maxCalories:F0}";
-            url += $"&to={resultLimit}"; // Limit number of results
+            url += $"&calories={minCalories * 0.5:F0}-{maxCalories * 4:F0}";  // Cast wider net
+            url += $"&to={resultLimit}";
 
-            Console.WriteLine("URL gọi API (TDEE-based): " + url);
+            Console.WriteLine($"URL gọi API (TDEE-based): {url}");
+            Console.WriteLine($"TDEE: {tdee} kcal/ngày → Mỗi bữa: {mealCalories:F0} kcal (khoảng {minCalories:F0}-{maxCalories:F0})");
 
             using (HttpClient client = new HttpClient())
             {
@@ -239,8 +243,33 @@ public class EdamamService
                 }
 
                 string jsonData = await response.Content.ReadAsStringAsync();
-                Console.WriteLine($"API trả về {JObject.Parse(jsonData)["hits"]?.Count() ?? 0} món ăn");
-                return jsonData;
+                JObject data = JObject.Parse(jsonData);
+
+                // Filter results to only include recipes where calories per serving is appropriate
+                if (data["hits"] != null)
+                {
+                    var hits = (JArray)data["hits"];
+                    var filteredHits = new JArray();
+
+                    foreach (var hit in hits)
+                    {
+                        var recipe = hit["recipe"];
+                        double totalCalories = recipe["calories"]?.Value<double>() ?? 0;
+                        double servings = recipe["yield"]?.Value<double>() ?? 1;
+                        double caloriesPerServing = totalCalories / servings;
+
+                        // Only include if calories per serving is within our target range
+                        if (caloriesPerServing >= minCalories && caloriesPerServing <= maxCalories)
+                        {
+                            filteredHits.Add(hit);
+                        }
+                    }
+
+                    data["hits"] = filteredHits;
+                    Console.WriteLine($"API trả về {hits.Count} món ăn, sau khi lọc theo calories/serving: {filteredHits.Count} món");
+                }
+
+                return data.ToString();
             }
         }
         catch (Exception ex)
