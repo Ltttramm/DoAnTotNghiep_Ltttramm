@@ -6,11 +6,11 @@ using Newtonsoft.Json.Linq;
 
 public class NutritionController : Controller
 {
-    private readonly HttpClient _httpClient;
+    private readonly SpoonacularService _spoonacularService;
 
     public NutritionController()
     {
-        _httpClient = new HttpClient();
+        _spoonacularService = new SpoonacularService();
     }
 
     public async Task<ActionResult> Analyze(string ingredient)
@@ -21,21 +21,17 @@ public class NutritionController : Controller
             return View();
         }
 
-        string apiUrl = $"https://api.edamam.com/api/nutrition-data?app_id=26a45bf8&app_key=72311f618c619600f6d6e59358a19358&ingr={Uri.EscapeDataString(ingredient)}";
-
         try
         {
-            HttpResponseMessage response = await _httpClient.GetAsync(apiUrl);
-            if (response.IsSuccessStatusCode)
+            string jsonString = await _spoonacularService.SearchIngredientNutritionAsync(ingredient);
+            
+            if (!jsonString.Contains("\"error\""))
             {
-                string jsonString = await response.Content.ReadAsStringAsync();
-                JObject nutritionData = JObject.Parse(jsonString);
-
-                ViewBag.JsonData = nutritionData.ToString(); // Lưu dữ liệu JSON vào ViewBag
+                ViewBag.JsonData = jsonString; // Lưu dữ liệu JSON vào ViewBag
             }
             else
             {
-                ViewBag.Error = "Không thể kết nối đến API.";
+                ViewBag.Error = "Không thể lấy thông tin dinh dưỡng.";
             }
         }
         catch (Exception ex)

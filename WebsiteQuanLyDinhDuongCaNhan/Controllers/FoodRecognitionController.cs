@@ -10,8 +10,12 @@ namespace WebsiteQuanLyDinhDuongCaNhan.Controllers
 {
     public class FoodRecognitionController : Controller
     {
-        private const string EdamamApiId = "984cb63e";
-        private const string EdamamApiKey = "2bbc5eb36a164d034f0a90c78b9458fb";
+        private readonly SpoonacularService _spoonacularService;
+
+        public FoodRecognitionController()
+        {
+            _spoonacularService = new SpoonacularService();
+        }
 
         public ActionResult FoodRecognition()
         {
@@ -116,27 +120,31 @@ namespace WebsiteQuanLyDinhDuongCaNhan.Controllers
 
         private async Task<string> GetNutritionInfo(string foodName)
         {
-            string apiUrl = $"https://api.edamam.com/api/food-database/v2/parser?ingr={foodName}&app_id={EdamamApiId}&app_key={EdamamApiKey}";
-
-            using (HttpClient client = new HttpClient())
+            try
             {
-                var response = await client.GetAsync(apiUrl);
-                var content = await response.Content.ReadAsStringAsync();
-                JObject jsonResponse = JObject.Parse(content);
+                // Use Spoonacular to search for food nutrition
+                string jsonResponse = await _spoonacularService.SearchFoodAsync(foodName, 1);
+                JObject json = JObject.Parse(jsonResponse);
 
-                var hints = jsonResponse["hints"] as JArray;
-                if (hints != null && hints.Count > 0)
+                var results = json["results"] as JArray;
+                if (results != null && results.Count > 0)
                 {
-                    var food = hints[0]["food"];
-                    if (food != null)
-                    {
-                        string name = food["label"]?.ToString();
-                        string kcal = food["nutrients"]?["ENERC_KCAL"]?.ToString() ?? "Không có dữ liệu";
-                        string protein = food["nutrients"]?["PROCNT"]?.ToString() ?? "Không có dữ liệu";
+                    int ingredientId = int.Parse(results[0]["id"]?.ToString() ?? "0");
+                    string name = results[0]["name"]?.ToString();
 
-                        return $"Món ăn: {name}, Calo: {kcal} kcal, Protein: {protein}g";
-                    }
+                    // Get detailed nutrition information
+                    string nutritionData = await _spoonacularService.GetIngredientInformationAsync(ingredientId, 100, "grams");
+                    JObject nutritionJson = JObject.Parse(nutritionData);
+
+                    string kcal = nutritionJson["nutrition"]?["nutrients"]?.FirstOrDefault(n => n["name"]?.ToString() == "Calories")?["amount"]?.ToString() ?? "N/A";
+                    string protein = nutritionJson["nutrition"]?["nutrients"]?.FirstOrDefault(n => n["name"]?.ToString() == "Protein")?["amount"]?.ToString() ?? "N/A";
+
+                    return $"Món ăn: {name}, Calo: {kcal} kcal, Protein: {protein}g";
                 }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Error in GetNutritionInfo: " + ex.Message);
             }
 
             return "Không tìm thấy thông tin dinh dưỡng.";

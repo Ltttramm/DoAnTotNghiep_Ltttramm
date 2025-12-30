@@ -12,11 +12,11 @@ using System.Collections.Generic;
 
 public class AIMealPlannerController : Controller
 {
-    private readonly EdamamService _edamamService;
+    private readonly SpoonacularService _spoonacularService;
     private readonly UserService _userService;
     public AIMealPlannerController()
     {
-        _edamamService = new EdamamService();
+        _spoonacularService = new SpoonacularService();
         _userService = new UserService();
     }
 
@@ -37,10 +37,10 @@ public class AIMealPlannerController : Controller
             double tdee = _userService.CalculateTDEE(user);
             ViewBag.TDEE = tdee;
 
-            // Automatically load meals based on TDEE on page load
-            string mealPlanJson = await _edamamService.GetMealsByTDEEAsync(tdee);
+            // Generate daily meal plan (3 meals) based on TDEE using Spoonacular
+            string mealPlanJson = await _spoonacularService.GenerateDailyMealPlanAsync(tdee);
 
-            // Pass all meals to view for client-side filtering
+            // Pass meal plan to view
             if (!string.IsNullOrWhiteSpace(mealPlanJson) && !mealPlanJson.Contains("\"error\""))
             {
                 ViewBag.MealPlan = mealPlanJson;
@@ -60,6 +60,33 @@ public class AIMealPlannerController : Controller
             ViewBag.MealPlan = null;
             ViewBag.ErrorMessage = "Đã xảy ra lỗi. Vui lòng thử lại.";
             return View("MealPlan");
+        }
+    }
+
+    /// <summary>
+    /// AJAX endpoint to fetch detailed recipe information
+    /// </summary>
+    [HttpGet]
+    public async Task<JsonResult> GetRecipeDetails(int recipeId)
+    {
+        try
+        {
+            string recipeJson = await _spoonacularService.GetRecipeInformationAsync(recipeId);
+            
+            if (!recipeJson.Contains("\"error\""))
+            {
+                var recipeData = JObject.Parse(recipeJson);
+                return Json(recipeData, JsonRequestBehavior.AllowGet);
+            }
+            else
+            {
+                return Json(new { error = "Không thể tải công thức" }, JsonRequestBehavior.AllowGet);
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error in GetRecipeDetails: {ex.Message}");
+            return Json(new { error = "Đã xảy ra lỗi" }, JsonRequestBehavior.AllowGet);
         }
     }
 

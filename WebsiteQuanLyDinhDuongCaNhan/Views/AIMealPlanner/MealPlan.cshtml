@@ -1,13 +1,12 @@
-﻿@using Newtonsoft.Json.Linq
-@{
-    ViewBag.Title = "Thực đơn tuần";
+﻿@{
+    ViewBag.Title = "Thực đơn theo TDEE";
     ViewData["HideFooter"] = true;
 }
 
-<h2 class="text-2xl font-bold text-center text-[#C4A46B] mb-6 mt-[150px]">🍽️ Tìm Kiếm Thực Đơn</h2>
-<div class="text-center mb-3">
+<h2 class="text-2xl font-bold text-center text-[#C4A46B] mb-6 mt-[150px]">🍽️ Thực Đơn Gợi Ý Theo TDEE</h2>
+<div class="text-center mb-5">
     <p><strong>TDEE của bạn:</strong> <span class="text-primary fw-bold">@ViewBag.TDEE kcal/ngày</span></p>
-    <p class="text-muted small">💡 Gợi ý: Mỗi bữa ăn nên có khoảng <strong>@((int)(ViewBag.TDEE / 3)) kcal</strong> (TDEE chia 3 bữa)</p>
+    <p class="text-muted small">💡 Kế hoạch 3 bữa ăn phù hợp với nhu cầu năng lượng hàng ngày của bạn</p>
 </div>
 
 @if (ViewBag.ErrorMessage != null)
@@ -17,212 +16,89 @@
     </div>
 }
 
-<!-- Form tìm kiếm (Client-side filtering) -->
-<form id="filterForm" class="search-form" onsubmit="return false;">
-    <div class="filter-container">
-        <input type="text" id="keywordInput" placeholder="🥗 Nhập món ăn (vd: chicken)" class="form-control rounded">
-        <input type="number" id="caloriesInput" placeholder="🔥 Calories (optional)" class="form-control rounded">
-        <select id="dietSelect" class="form-control rounded">
-            <option value="">Chọn chế độ ăn</option>
-            <option value="balanced">Balanced</option>
-            <option value="high-protein">High Protein</option>
-            <option value="low-carb">Low Carb</option>
-            <option value="low-fat">Low Fat</option>
-            <option value="low-sodium">Low-Sodium</option>
-            <option value="high-fiber">High-Fiber</option>
-            <option value="keto">Keto</option>
-            <option value="paleo">Paleo</option>
-        </select>
-        <select id="healthSelect" class="form-control rounded">
-            <option value="">Chọn hạn chế ăn uống</option>
-            <option value="gluten-free">Gluten-Free</option>
-            <option value="vegan">Vegan</option>
-            <option value="vegetarian">Vegetarian</option>
-            <option value="dairy-free">Dairy-Free</option>
-            <option value="egg-free">Egg-Free</option>
-            <option value="peanut-free">Peanut-Free</option>
-            <option value="tree-nut-free">Tree-Nut-Free</option>
-            <option value="soy-free">Soy-Free</option>
-            <option value="fish-free">Fish-Free</option>
-            <option value="shellfish-free">Shellfish-Free</option>
-            <option value="pork-free">Pork-Free</option>
-            <option value="alcohol-free">Alcohol-Free</option>
-            <option value="sugar-conscious">Sugar-Conscious</option>
-            <option value="kosher">Kosher</option>
-        </select>
-        <button type="button" onclick="filterMeals()" class="btn btn-success rounded">🔎 Tìm kiếm</button>
-        <button type="button" onclick="resetFilters()" class="btn btn-secondary rounded">🔄 Reset</button>
-    </div>
-</form>
-
-<p id="resultCount" class="text-center text-muted mt-2"></p>
-
 @if (ViewBag.MealPlan != null)
 {
     try
     {
-        var mealData = JObject.Parse(ViewBag.MealPlan);
+        var mealPlanData = Newtonsoft.Json.Linq.JObject.Parse(ViewBag.MealPlan);
+        var meals = mealPlanData["meals"];
+        var nutrients = mealPlanData["nutrients"];
 
-        if (mealData.ContainsKey("hits"))
+        if (meals != null)
         {
-            <div id="mealsContainer" class="container">
-                <div class="row row-cols-1 row-cols-md-2 g-4" id="mealCards">
-                    @foreach (var hit in mealData["hits"])
+            <div class="nutrition-summary text-center mb-4">
+                <h5 class="text-success">📊 Tổng Dinh Dưỡng Trong Ngày</h5>
+                <div class="d-flex justify-content-center gap-4 flex-wrap">
+                    @if (nutrients != null)
                     {
-                        var recipe = hit["recipe"];
-                        var imageUrl = recipe["image"]?.ToString() ?? "/images/default.jpg";
-                        var url = recipe["url"]?.ToString() ?? "#";
-                        var ingredients = recipe["ingredientLines"] ?? new JArray();
-                        var label = recipe["label"]?.ToString() ?? "";
-                        
-                        // Calculate calories per serving
-                        double totalCalories = double.Parse(recipe["calories"]?.ToString() ?? "0");
-                        double servings = double.Parse(recipe["yield"]?.ToString() ?? "1");
-                        double caloriesPerServing = totalCalories / servings;
-                        
-                        // Extract diet and health labels for filtering
-                        var dietLabels = recipe["dietLabels"] != null ? string.Join(",", ((JArray)recipe["dietLabels"]).Select(d => d.ToString().ToLower())) : "";
-                        var healthLabels = recipe["healthLabels"] != null ? string.Join(",", ((JArray)recipe["healthLabels"]).Select(h => h.ToString().ToLower())) : "";
+                        <div><strong>Calories:</strong> @((int)double.Parse(nutrients["calories"]?.ToString() ?? "0")) kcal</div>
+                        <div><strong>Protein:</strong> @((int)double.Parse(nutrients["protein"]?.ToString() ?? "0"))g</div>
+                        <div><strong>Fat:</strong> @((int)double.Parse(nutrients["fat"]?.ToString() ?? "0"))g</div>
+                        <div><strong>Carbs:</strong> @((int)double.Parse(nutrients["carbohydrates"]?.ToString() ?? "0"))g</div>
+                    }
+                </div>
+            </div>
 
-                        <div class="col meal-card" 
-                             data-label="@label.ToLower()" 
-                             data-calories="@caloriesPerServing"
-                             data-diet="@dietLabels"
-                             data-health="@healthLabels">
-                            <div class="card h-100 shadow-sm">
-                                <!-- Hình ảnh món ăn -->
-                                <div class="image-container">
-                                    <img src="@imageUrl" class="food-image" alt="@label">
+            <div class="container">
+                @foreach (var meal in meals)
+                {
+                    var mealId = meal["id"]?.ToString() ?? "";
+                    var title = meal["title"]?.ToString() ?? "Unknown";
+                    var readyInMinutes = meal["readyInMinutes"]?.ToString() ?? "N/A";
+                    var servings = meal["servings"]?.ToString() ?? "1";
+                    var imageUrl = meal["image"]?.ToString() ?? "/images/default.jpg";
+                    var sourceUrl = meal["sourceUrl"]?.ToString() ?? "#";
+
+                    <div class="meal-section mb-5">
+                        <h4 class="text-center fw-bold text-success mb-3">
+                            @{
+                                var mealIndex = meals.ToList().IndexOf(meal);
+                                var mealLabel = mealIndex == 0 ? "🌅 Bữa Sáng" : (mealIndex == 1 ? "☀️ Bữa Trưa" : "🌙 Bữa Tối");
+                            }
+                            @mealLabel
+                        </h4>
+
+                        <div class="card shadow-sm meal-card">
+                            <!-- Image -->
+                            <div class="image-container">
+                                <img src="@imageUrl" class="food-image" alt="@title">
+                            </div>
+
+                            <!-- Content -->
+                            <div class="card-body">
+                                <h5 class="card-title text-center fw-bold text-success">@title</h5>
+                                <div class="meal-info text-center">
+                                    <p class="mb-2"><strong>⏱️ Thời gian:</strong> @readyInMinutes phút</p>
+                                    <p class="mb-2"><strong>🍽️ Khẩu phần:</strong> @servings người</p>
                                 </div>
 
-                                <!-- Nội dung món ăn -->
-                                <div class="card-body d-flex flex-column align-items-center">
-                                    <div class="content-container">
-                                        <h4 class="card-title font-weight-bold text-center fw-bold text-success">@label</h4>
-                                        <p><strong>🍽️ Khẩu phần:</strong> @((int)servings) người</p>
-                                        <p><strong>🔥 Calo/người:</strong> <span class="text-primary fw-bold">@((int)caloriesPerServing) kcal</span></p>
-                                        <p class="text-muted small"><em>(Tổng: @((int)totalCalories) kcal)</em></p>
+                                <div class="d-flex justify-content-center gap-2 mt-3">
+                                    <button type="button" class="btn btn-success" onclick="showRecipeInstructions('@mealId', '@title')">
+                                        📖 Xem Công Thức
+                                    </button>
+                                    <a href="@sourceUrl" target="_blank" class="btn btn-outline-primary">
+                                        🔗 Nguồn Gốc
+                                    </a>
+                                </div>
 
-                                        <div class="info-box">
-                                            <h6 class="fw-bold text-success">🌿 Nguyên liệu:</h6>
-                                            <ul class="list-unstyled">
-                                                @{
-                                                    var ingredientArray = (JArray)ingredients;
-                                                    var displayCount = Math.Min(5, ingredientArray.Count);
-                                                }
-                                                @for (int i = 0; i < displayCount; i++)
-                                                {
-                                                    <li>✔️ @ingredientArray[i].ToString()</li>
-                                                }
-                                                @if (ingredientArray.Count > 5)
-                                                {
-                                                    <li><em>... và @(ingredientArray.Count - 5) nguyên liệu khác</em></li>
-                                                }
-                                            </ul>
+                                <!-- Recipe details container (hidden by default) -->
+                                <div id="recipe-details-@mealId" class="recipe-details mt-4" style="display:none;">
+                                    <div class="loading text-center">
+                                        <div class="spinner-border text-success" role="status">
+                                            <span class="visually-hidden">Đang tải...</span>
                                         </div>
-
-                                        <div class="info-box">
-                                            <h6 class="fw-bold text-success">🍳 Cách nấu:</h6>
-                                            <a href="@url" target="_blank" class="btn btn-outline-primary">📖 Xem công thức</a>
-                                        </div>
+                                        <p>Đang tải công thức nấu ăn...</p>
                                     </div>
                                 </div>
                             </div>
                         </div>
-                    }
-                </div>
+                    </div>
+                }
             </div>
-            
-            <script>
-                // Store all meals data for filtering
-                let allMeals = @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(mealData["hits"]));
-                let totalMeals = allMeals.length;
-                
-                // Display initial count
-                document.getElementById('resultCount').textContent = `Hiển thị ${totalMeals} món ăn phù hợp với TDEE của bạn`;
-
-                function filterMeals() {
-                    const keyword = document.getElementById('keywordInput').value.toLowerCase().trim();
-                    const calories = document.getElementById('caloriesInput').value;
-                    const diet = document.getElementById('dietSelect').value.toLowerCase();
-                    const health = document.getElementById('healthSelect').value.toLowerCase();
-
-                    const mealCards = document.querySelectorAll('.meal-card');
-                    let visibleCount = 0;
-
-                    mealCards.forEach(card => {
-                        let show = true;
-
-                        // Filter by keyword (search in label)
-                        if (keyword && !card.dataset.label.includes(keyword)) {
-                            show = false;
-                        }
-
-                        // Filter by calories (±100 range)
-                        if (calories) {
-                            const cardCalories = parseFloat(card.dataset.calories);
-                            const targetCalories = parseFloat(calories);
-                            if (cardCalories < targetCalories - 100 || cardCalories > targetCalories + 100) {
-                                show = false;
-                            }
-                        }
-
-                        // Filter by diet
-                        if (diet && !card.dataset.diet.includes(diet)) {
-                            show = false;
-                        }
-
-                        // Filter by health
-                        if (health && !card.dataset.health.includes(health)) {
-                            show = false;
-                        }
-
-                        // Show or hide card
-                        card.style.display = show ? 'block' : 'none';
-                        if (show) visibleCount++;
-                    });
-
-                    // Update result count
-                    document.getElementById('resultCount').textContent = 
-                        `Hiển thị ${visibleCount} / ${totalMeals} món ăn`;
-
-                    // Show message if no results
-                    if (visibleCount === 0) {
-                        document.getElementById('resultCount').textContent = 
-                            '❌ Không tìm thấy món ăn phù hợp. Hãy thử thay đổi bộ lọc.';
-                        document.getElementById('resultCount').style.color = 'red';
-                    } else {
-                        document.getElementById('resultCount').style.color = '#6c757d';
-                    }
-                }
-
-                function resetFilters() {
-                    document.getElementById('keywordInput').value = '';
-                    document.getElementById('caloriesInput').value = '';
-                    document.getElementById('dietSelect').selectedIndex = 0;
-                    document.getElementById('healthSelect').selectedIndex = 0;
-
-                    // Show all cards
-                    document.querySelectorAll('.meal-card').forEach(card => {
-                        card.style.display = 'block';
-                    });
-
-                    document.getElementById('resultCount').textContent = 
-                        `Hiển thị ${totalMeals} món ăn phù hợp với TDEE của bạn`;
-                    document.getElementById('resultCount').style.color = '#6c757d';
-                }
-
-                // Allow Enter key to trigger search
-                document.getElementById('keywordInput').addEventListener('keypress', function(e) {
-                    if (e.key === 'Enter') {
-                        filterMeals();
-                    }
-                });
-            </script>
         }
         else
         {
-            <p class="text-danger text-center">API không trả về danh sách món ăn.</p>
+            <p class="text-danger text-center">Không có thực đơn.</p>
         }
     }
     catch (Exception ex)
@@ -232,119 +108,158 @@
 }
 else
 {
-    <p class="text-warning text-center">Đang tải danh sách món ăn...</p>
+    <p class="text-warning text-center">Đang tải thực đơn...</p>
 }
+
+<!-- JavaScript for recipe details -->
+<script>
+    async function showRecipeInstructions(recipeId, recipeTitle) {
+        const detailsContainer = document.getElementById(`recipe-details-${recipeId}`);
+        
+        // Toggle visibility
+        if (detailsContainer.style.display === 'block') {
+            detailsContainer.style.display = 'none';
+            return;
+        }
+
+        // Show loading
+        detailsContainer.style.display = 'block';
+        
+        try {
+            // Fetch recipe information from server
+            const response = await fetch(`/AIMealPlanner/GetRecipeDetails?recipeId=${recipeId}`);
+            const data = await response.json();
+
+            if (data.error) {
+                detailsContainer.innerHTML = `<div class="alert alert-danger">${data.error}</div>`;
+                return;
+            }
+
+            // Build HTML for instructions
+            let html = '<div class="recipe-content">';
+            
+            // Ingredients
+            if (data.extendedIngredients && data.extendedIngredients.length > 0) {
+                html += '<h6 class="fw-bold text-success mt-3">🌿 Nguyên liệu:</h6><ul class="list-unstyled">';
+                data.extendedIngredients.forEach(ing => {
+                    html += `<li>✔️ ${ing.original}</li>`;
+                });
+                html += '</ul>';
+            }
+
+            // Instructions
+            if (data.analyzedInstructions && data.analyzedInstructions.length > 0) {
+                html += '<h6 class="fw-bold text-success mt-3">👨‍🍳 Hướng Dẫn Nấu:</h6><ol>';
+                data.analyzedInstructions[0].steps.forEach(step => {
+                    html += `<li class="mb-2">${step.step}</li>`;
+                });
+                html += '</ol>';
+            }
+
+            // Nutrition
+            if (data.nutrition && data.nutrition.nutrients) {
+                html += '<h6 class="fw-bold text-success mt-3">📊 Dinh Dưỡng Chi Tiết:</h6>';
+                html += '<div class="nutrition-grid">';
+                data.nutrition.nutrients.slice(0, 10).forEach(nutrient => {
+                    html += `<div><strong>${nutrient.name}:</strong> ${nutrient.amount.toFixed(1)} ${nutrient.unit}</div>`;
+                });
+                html += '</div>';
+            }
+
+            html += '</div>';
+            detailsContainer.innerHTML = html;
+        } catch (error) {
+            console.error('Error fetching recipe details:', error);
+            detailsContainer.innerHTML = '<div class="alert alert-danger">Không thể tải công thức. Vui lòng thử lại.</div>';
+        }
+    }
+</script>
 
 <!-- CSS -->
 <style>
-    .search-form {
-        display: flex;
-        justify-content: center;
-        gap: 10px;
-        margin-bottom: 10px;
-    }
-
-    .filter-container {
-        display: flex;
-        gap: 10px;
-        align-items: center;
-        flex-wrap: wrap;
-        justify-content: center;
-    }
-
-    .form-control {
-        width: 180px;
-        padding: 8px;
-        border-radius: 15px;
-        border: 1px solid #ccc;
-    }
-
-    /* Căn tiêu đề thực đơn xuống 150px */
     .title-menu {
         margin-top: 150px;
         text-align: center;
     }
 
-    /* Image container for consistent height and centering */
+    /* Image container */
     .image-container {
-        min-height: 200px;
-        max-height: 250px;
+        min-height: 250px;
+        max-height: 300px;
         display: flex;
         align-items: center;
         justify-content: center;
-        padding: 15px;
+        padding: 20px;
         background-color: #f8f9fa;
         border-radius: 10px 10px 0 0;
     }
 
-    /* Hình ảnh món ăn - centered and not stretched */
     .food-image {
-        max-height: 200px;
+        max-height: 250px;
         max-width: 100%;
         width: auto;
         height: auto;
-        object-fit: contain; /* Maintains aspect ratio without stretching */
+        object-fit: contain;
         border-radius: 8px;
         display: block;
     }
 
-    /* Hiệu ứng thẻ card */
-    .card {
+    .meal-section {
+        margin-bottom: 40px;
+    }
+
+    .meal-card {
         border-radius: 15px;
-        transition: transform 0.2s ease-in-out, background-color 0.3s ease-in-out;
+        transition: transform 0.2s ease-in-out;
+        border: 2px solid #C4A46B;
     }
 
-    .card:hover {
-        transform: scale(1.05);
-        background-color: rgba(255, 255, 255, 0.3);
+    .meal-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 20px rgba(0,0,0,0.1);
     }
 
-    /* Căn nội dung nằm giữa card */
-    .card-body {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
+    .nutrition-summary {
+        background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+        padding: 20px;
+        border-radius: 15px;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
     }
 
-    /* Đảm bảo nội dung có width fit-content nhưng vẫn căn giữa */
-    .content-container {
-        width: fit-content;
-        text-align: left;
+    .meal-info {
+        background-color: #f8f9fa;
+        padding: 15px;
+        border-radius: 10px;
+        margin: 15px 0;
     }
 
-    /* Căn giữa div chứa Nguyên liệu, Lượng calo, Cách nấu */
-    .info-box {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        width: 100%;
-        margin-bottom: 10px;
+    .recipe-details {
+        background-color: #f8f9fa;
+        padding: 20px;
+        border-radius: 10px;
+        margin-top: 20px;
+        border: 1px solid #dee2e6;
     }
 
-    /* Căn danh sách nguyên liệu vào giữa */
-    .list-unstyled {
-        display: flex;
-        flex-direction: column;
+    .nutrition-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 10px;
+        margin-top: 10px;
     }
 
-    /* Chỉnh kích thước thẻ p trong cách nấu */
-    .bg-light {
-        border-radius: 8px;
+    .nutrition-grid div {
+        background-color: white;
         padding: 10px;
-        width: 100%;
+        border-radius: 8px;
+        border-left: 3px solid #C4A46B;
     }
 
-    .btn {
-        text-align: center;
-    }
-
-    /* Nút bấm */
     .btn-success {
         font-size: 14px;
         font-weight: bold;
-        padding: 8px 10px;
+        padding: 10px 20px;
         border-radius: 25px;
-        min-width: 120px;
         background-color: #C4A46B;
         border: none;
         transition: all 0.3s ease-in-out;
@@ -355,35 +270,14 @@ else
         transform: scale(1.05);
     }
 
-    .btn-secondary {
+    .btn-outline-primary {
         font-size: 14px;
         font-weight: bold;
-        padding: 8px 10px;
+        padding: 10px 20px;
         border-radius: 25px;
-        min-width: 120px;
-        background-color: #6c757d;
-        border: none;
         transition: all 0.3s ease-in-out;
     }
 
-    .btn-secondary:hover {
-        background-color: #5a6268;
-        transform: scale(1.05);
-    }
-
-    /* Chữ đậm */
-    .fw-bold {
-        font-weight: bold;
-    }
-
-    /* Result count styling */
-    #resultCount {
-        font-size: 16px;
-        font-weight: 600;
-        margin-bottom: 20px;
-    }
-
-    /* Alert styling */
     .alert {
         padding: 15px;
         margin: 20px auto;
@@ -397,8 +291,8 @@ else
         color: #721c24;
     }
 
-    /* Loading and meal card animations */
-    .meal-card {
-        transition: opacity 0.3s ease-in-out;
+    .spinner-border {
+        width: 3rem;
+        height: 3rem;
     }
 </style>
