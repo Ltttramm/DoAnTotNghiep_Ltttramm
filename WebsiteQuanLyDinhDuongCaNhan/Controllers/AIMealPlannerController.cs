@@ -37,8 +37,15 @@ public class AIMealPlannerController : Controller
             double tdee = _userService.CalculateTDEE(user);
             ViewBag.TDEE = tdee;
 
+            // Debug logging
+            Console.WriteLine($"[DEBUG] User TDEE: {tdee}");
+
             // Generate daily meal plan (3 meals) based on TDEE using Spoonacular
             string mealPlanJson = await _spoonacularService.GenerateDailyMealPlanAsync(tdee);
+
+            // Debug logging
+            Console.WriteLine($"[DEBUG] Spoonacular Response Length: {mealPlanJson?.Length ?? 0}");
+            Console.WriteLine($"[DEBUG] Spoonacular Response: {mealPlanJson}");
 
             // Pass meal plan to view
             if (!string.IsNullOrWhiteSpace(mealPlanJson) && !mealPlanJson.Contains("\"error\""))
@@ -49,7 +56,7 @@ public class AIMealPlannerController : Controller
             else
             {
                 ViewBag.MealPlan = null;
-                ViewBag.ErrorMessage = "Không thể tải danh sách món ăn. Vui lòng thử lại sau.";
+                ViewBag.ErrorMessage = $"Không thể tải danh sách món ăn. API Response: {mealPlanJson?.Substring(0, Math.Min(200, mealPlanJson?.Length ?? 0))}";
             }
 
             return View("MealPlan");
