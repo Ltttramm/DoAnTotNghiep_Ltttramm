@@ -215,8 +215,8 @@ public class EdamamService
         {
             // Calculate appropriate calories for a single meal (divide TDEE by 3 meals per day)
             double mealCalories = tdee / 3;
-            double minCalories = mealCalories - 150;  // ±150 range for flexibility
-            double maxCalories = mealCalories + 150;
+            double minCalories = mealCalories - 50;  // ±100 range for closer matching
+            double maxCalories = mealCalories + 50;
 
             // Use a wider range for initial API search to get more results
             string url = $"{baseUrl}&app_id={appId}&app_key={apiKey}";
