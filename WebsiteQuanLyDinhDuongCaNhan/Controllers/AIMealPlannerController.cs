@@ -65,9 +65,10 @@ public class AIMealPlannerController : Controller
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Lỗi trong MealPlan controller: {ex.Message}");
+            System.Diagnostics.Debug.WriteLine($"Lỗi trong MealPlan controller: {ex.Message}");
             ViewBag.MealPlan = null;
-            ViewBag.ErrorMessage = "Đã xảy ra lỗi. Vui lòng thử lại.";
+            ViewBag.ErrorMessage = $"Đã xảy ra lỗi hệ thống: {ex.Message}";
+            ViewBag.ApiRawResponse = $"EXCEPTION STACK TRACE:\n{ex.ToString()}";
             return View("MealPlan");
         }
     }

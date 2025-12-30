@@ -96,17 +96,33 @@
                 }
             </div>
         }
+        }
         else
         {
-            <p class="text-danger text-center">Không có thực đơn.</p>
+            <div class="text-center mt-5">
+                <p class="text-danger fw-bold">⚠️ Không tìm thấy thực đơn trong phản hồi API.</p>
+                @if (ViewBag.ApiRawResponse != null)
+                {
+                    <p class="text-muted">Vui lòng kiểm tra phần Debug Log bên dưới.</p>
+                }
+            </div>
         }
     }
     catch (Exception ex)
     {
-        <p class="text-danger text-center">Lỗi khi xử lý dữ liệu: @ex.Message</p>
+        <div class="alert alert-danger text-center">
+            <p>Lỗi xử lý dữ liệu view: @ex.Message</p>
+        </div>
     }
 }
-    <p class="text-warning text-center">Đang tải thực đơn...</p>
+else
+{
+    @if (ViewBag.ErrorMessage == null) 
+    {
+        <div class="text-center mt-5">
+            <p class="text-muted">Không có dữ liệu hiển thị.</p>
+        </div>
+    }
 }
 
 <!-- Always show Raw Response for Debugging -->
