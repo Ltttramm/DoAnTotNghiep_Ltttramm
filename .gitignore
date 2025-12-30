@@ -1,3 +1,6 @@
+# Visual Studio
+.vs/
+
 # Build output
 bin/
 obj/
@@ -5,10 +8,11 @@ obj/
 # NuGet packages
 packages/
 
-# User-specific files
+# User-specific
 *.user
 *.suo
 *.cache
+*.log
 
 # Environment / secrets
 .env
