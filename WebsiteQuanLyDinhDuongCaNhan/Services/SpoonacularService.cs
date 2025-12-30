@@ -27,7 +27,8 @@ public class SpoonacularService
             string url = $"{baseUrl}/mealplanner/generate";
             url += $"?apiKey={apiKey}";
             url += $"&timeFrame=day";
-            url += $"&targetCalories={tdee:F0}";
+            // Use InvariantCulture to prevent issues with comma decimal separators in some locales
+            url += $"&targetCalories={tdee.ToString("F0", System.Globalization.CultureInfo.InvariantCulture)}";
 
             if (!string.IsNullOrEmpty(diet))
             {
@@ -40,35 +41,32 @@ public class SpoonacularService
             }
 
             // Detailed request logging
-            Console.WriteLine("========== SPOONACULAR API REQUEST ==========");
-            Console.WriteLine($"[REQUEST] Endpoint: /mealplanner/generate");
-            Console.WriteLine($"[REQUEST] Method: GET");
-            Console.WriteLine($"[REQUEST] Target Calories: {tdee:F0}");
-            Console.WriteLine($"[REQUEST] TimeFrame: day");
-            Console.WriteLine($"[REQUEST] Diet: {(string.IsNullOrEmpty(diet) ? "none" : diet)}");
-            Console.WriteLine($"[REQUEST] Exclude: {(string.IsNullOrEmpty(exclude) ? "none" : exclude)}");
-            Console.WriteLine($"[REQUEST] Full URL: {url.Replace(apiKey, "***HIDDEN***")}");
-            Console.WriteLine("=============================================");
+            System.Diagnostics.Debug.WriteLine("========== SPOONACULAR API REQUEST ==========");
+            System.Diagnostics.Debug.WriteLine($"[REQUEST] Full URL: {url}");
 
             using (HttpClient client = new HttpClient())
             {
+                // Ensure TLS 1.2 is supported (critical for some environments)
+                System.Net.ServicePointManager.SecurityProtocol |= System.Net.SecurityProtocolType.Tls12;
+
+                // Add User-Agent header as some APIs block requests without it
+                client.DefaultRequestHeaders.Add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64)");
+
                 HttpResponseMessage response = await client.GetAsync(url);
-
-                // Detailed response logging
-                Console.WriteLine("========== SPOONACULAR API RESPONSE ==========");
-                Console.WriteLine($"[RESPONSE] Status Code: {(int)response.StatusCode} {response.StatusCode}");
-                Console.WriteLine($"[RESPONSE] Success: {response.IsSuccessStatusCode}");
-                Console.WriteLine($"[RESPONSE] Headers: {response.Headers}");
-
                 string jsonData = await response.Content.ReadAsStringAsync();
-                Console.WriteLine($"[RESPONSE] Content Length: {jsonData?.Length ?? 0} characters");
-                Console.WriteLine($"[RESPONSE] Content: {jsonData}");
-                Console.WriteLine("==============================================");
+
+                System.Diagnostics.Debug.WriteLine($"[RESPONSE] Status: {response.StatusCode}");
+                System.Diagnostics.Debug.WriteLine($"[RESPONSE] Content: {jsonData}");
 
                 if (!response.IsSuccessStatusCode)
                 {
-                    Console.WriteLine($"[ERROR] API returned error status. Message: {jsonData}");
-                    return "{\"error\": \"Không thể tạo thực đơn\"}";
+                    return $"{{\"error\": \"API Error: {response.StatusCode} - {jsonData.Replace("\"", "'")}\"}}";
+                }
+
+                // Check for empty content
+                if (string.IsNullOrWhiteSpace(jsonData))
+                {
+                     return "{\"error\": \"API returned empty response\"}";
                 }
 
                 return jsonData;
@@ -76,11 +74,8 @@ public class SpoonacularService
         }
         catch (Exception ex)
         {
-            Console.WriteLine("========== EXCEPTION ==========");
-            Console.WriteLine($"[EXCEPTION] Message: {ex.Message}");
-            Console.WriteLine($"[EXCEPTION] Stack Trace: {ex.StackTrace}");
-            Console.WriteLine("================================");
-            return "{\"error\": \"Đã xảy ra lỗi khi tạo thực đơn\"}";
+            System.Diagnostics.Debug.WriteLine($"[EXCEPTION] {ex.Message}");
+            return $"{{\"error\": \"Exception generating meal plan: {ex.Message}\"}}";
         }
     }
 
