@@ -136,8 +136,10 @@ namespace WebsiteQuanLyDinhDuongCaNhan.Controllers
                     string nutritionData = await _spoonacularService.GetIngredientInformationAsync(ingredientId, 100, "grams");
                     JObject nutritionJson = JObject.Parse(nutritionData);
 
-                    string kcal = nutritionJson["nutrition"]?["nutrients"]?.FirstOrDefault(n => n["name"]?.ToString() == "Calories")?["amount"]?.ToString() ?? "N/A";
-                    string protein = nutritionJson["nutrition"]?["nutrients"]?.FirstOrDefault(n => n["name"]?.ToString() == "Protein")?["amount"]?.ToString() ?? "N/A";
+                    // Get nutrition values from array
+                    var nutrients = nutritionJson["nutrition"]?["nutrients"] as JArray;
+                    string kcal = nutrients?.FirstOrDefault(n => n["name"]?.ToString() == "Calories")?["amount"]?.ToString() ?? "N/A";
+                    string protein = nutrients?.FirstOrDefault(n => n["name"]?.ToString() == "Protein")?["amount"]?.ToString() ?? "N/A";
 
                     return $"Món ăn: {name}, Calo: {kcal} kcal, Protein: {protein}g";
                 }
