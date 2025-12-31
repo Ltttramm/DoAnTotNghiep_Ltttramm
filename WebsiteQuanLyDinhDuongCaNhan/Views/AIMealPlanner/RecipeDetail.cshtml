@@ -86,7 +86,7 @@ else if (ViewBag.RecipeData != null)
                     {
                         <div class="card shadow-sm mb-4">
                             <div class="card-header bg-success text-white">
-                                <h3 class="mb-0">🌿 Nguyên Liệu</h3>
+                                <h3 class="mb-0">🌿 Ingredients</h3>
                             </div>
                             <div class="card-body">
                                 <ul class="ingredients-list">
@@ -105,7 +105,7 @@ else if (ViewBag.RecipeData != null)
                     {
                         <div class="card shadow-sm mb-4">
                             <div class="card-header bg-primary text-white">
-                                <h3 class="mb-0">👨‍🍳 Hướng Dẫn Nấu</h3>
+                                <h3 class="mb-0">👨‍🍳 Instructions</h3>
                             </div>
                             <div class="card-body">
                                 <ol class="instructions-list">
@@ -114,7 +114,7 @@ else if (ViewBag.RecipeData != null)
                                         var stepNumber = step["number"]?.ToString() ?? "";
                                         var stepText = step["step"]?.ToString() ?? "";
                                         <li class="instruction-step">
-                                            <strong>Bước @stepNumber:</strong> @stepText
+                                            <strong>Step @stepNumber:</strong> @stepText
                                         </li>
                                     }
                                 </ol>
@@ -124,7 +124,7 @@ else if (ViewBag.RecipeData != null)
                     else
                     {
                         <div class="alert alert-info">
-                            <p>Không có hướng dẫn chi tiết. Vui lòng xem nguồn gốc để biết thêm thông tin.</p>
+                            <p>No detailed instructions available. Please check the source for more information.</p>
                         </div>
                     }
                 </div>
@@ -137,7 +137,7 @@ else if (ViewBag.RecipeData != null)
                         
                         <div class="card shadow-sm mb-4 sticky-nutrition">
                             <div class="card-header bg-warning text-dark">
-                                <h3 class="mb-0">📊 Dinh Dưỡng Chi Tiết</h3>
+                                <h3 class="mb-0">📊 Nutrition Facts</h3>
                                 <small class="text-muted">Per serving</small>
                             </div>
                             <div class="card-body">
@@ -170,7 +170,7 @@ else if (ViewBag.RecipeData != null)
                     else
                     {
                         <div class="alert alert-warning">
-                            <p>Không có thông tin dinh dưỡng chi tiết.</p>
+                            <p>No detailed nutrition information available.</p>
                         </div>
                     }
                 </div>
