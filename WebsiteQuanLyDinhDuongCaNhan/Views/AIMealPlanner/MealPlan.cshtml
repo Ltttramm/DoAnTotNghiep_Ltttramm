@@ -1,133 +1,157 @@
 ﻿@{
-    ViewBag.Title = "Thực đơn theo TDEE";
+    ViewBag.Title = "7-Day Meal Plan";
     ViewData["HideFooter"] = true;
 }
 
-<h2 class="text-2xl font-bold text-center text-[#C4A46B] mb-6 mt-[150px]">🍽️ Thực Đơn Gợi Ý Theo TDEE</h2>
+<h2 class="text-2xl font-bold text-center text-[#C4A46B] mb-6 mt-[150px]">7-Day Meal Plan</h2>
 <div class="text-center mb-5">
-    <p><strong>TDEE của bạn:</strong> <span class="text-primary fw-bold">@ViewBag.TDEE kcal/ngày</span></p>
-    <p class="text-muted small">💡 Kế hoạch 3 bữa ăn phù hợp với nhu cầu năng lượng hàng ngày của bạn</p>
+    <p><strong>Your TDEE:</strong> <span class="text-primary fw-bold">@ViewBag.TDEE kcal/day</span></p>
+    <p class="text-muted small">Weekly meal plan tailored to your daily energy needs</p>
 </div>
 
 @if (ViewBag.ErrorMessage != null)
 {
     <div class="alert alert-danger text-center">
-        <strong>⚠️ Lỗi:</strong> @ViewBag.ErrorMessage
+        <strong>Error:</strong> @ViewBag.ErrorMessage
     </div>
 }
 
-@if (ViewBag.MealPlan != null)
+@if (ViewBag.WeeklyMealPlan != null)
 {
     try
     {
-        var mealPlanData = Newtonsoft.Json.Linq.JObject.Parse(ViewBag.MealPlan);
-        var meals = mealPlanData["meals"];
-        var nutrients = mealPlanData["nutrients"];
-
-        if (meals != null)
+        var weeklyData = Newtonsoft.Json.Linq.JObject.Parse(ViewBag.WeeklyMealPlan);
+        var week = weeklyData["week"];
+        
+        if (week != null)
         {
-            <div class="nutrition-summary text-center mb-4">
-                <h5 class="text-success">📊 Tổng Dinh Dưỡng Trong Ngày</h5>
-                <div class="d-flex justify-content-center gap-4 flex-wrap">
-                    @if (nutrients != null)
-                    {
-                        <div><strong>Calories:</strong> @((int)double.Parse(nutrients["calories"]?.ToString() ?? "0")) kcal</div>
-                        <div><strong>Protein:</strong> @((int)double.Parse(nutrients["protein"]?.ToString() ?? "0"))g</div>
-                        <div><strong>Fat:</strong> @((int)double.Parse(nutrients["fat"]?.ToString() ?? "0"))g</div>
-                        <div><strong>Carbs:</strong> @((int)double.Parse(nutrients["carbohydrates"]?.ToString() ?? "0"))g</div>
-                    }
+            var days = new[] { "monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday" };
+            var dayLabels = new[] { "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday" };
+            
+            <!-- Day Selector Dropdown -->
+            <div class="day-selector-container mb-4">
+                <div class="card shadow-sm">
+                    <div class="card-body">
+                        <label for="daySelect" class="form-label fw-bold">Select Day:</label>
+                        <select id="daySelect" class="form-select form-select-lg" onchange="showDayMeals(this.value)">
+                            @for (int i = 0; i < days.Length; i++)
+                            {
+                                <option value="@i">Day @(i + 1) - @dayLabels[i]</option>
+                            }
+                        </select>
+                    </div>
                 </div>
             </div>
 
-            <div class="container">
-                @{
-                    int mealIndex = 0;
-                }
-                @foreach (var meal in meals)
+            <!-- Render all 7 days -->
+            @for (int dayIndex = 0; dayIndex < days.Length; dayIndex++)
+            {
+                var dayName = days[dayIndex];
+                var dayData = week[dayName];
+                
+                if (dayData != null)
                 {
-                    var mealId = meal["id"]?.ToString() ?? "";
-                    var title = meal["title"]?.ToString() ?? "Unknown";
-                    var readyInMinutes = meal["readyInMinutes"]?.ToString() ?? "N/A";
-                    var servings = meal["servings"]?.ToString() ?? "1";
-                    var imageRaw = meal["image"]?.ToString() ?? "";
-                    // Fix image URL - prepend Spoonacular CDN if it's a relative path
-                    var imageUrl = string.IsNullOrEmpty(imageRaw) ? "/images/default.jpg" : 
-                                   (imageRaw.StartsWith("http") ? imageRaw : $"https://spoonacular.com/recipeImages/{imageRaw}");
-                    var sourceUrl = meal["sourceUrl"]?.ToString() ?? "#";
-
-                    <div class="meal-section mb-5">
-                        <h4 class="text-center fw-bold text-success mb-3">
-                            @{
-                                var mealLabel = mealIndex == 0 ? "🌅 Bữa Sáng" : (mealIndex == 1 ? "☀️ Bữa Trưa" : "🌙 Bữa Tối");
-                            }
-                            @mealLabel
-                        </h4>
-
-                        <div class="card shadow-sm meal-card">
-                            <!-- Image -->
-                            <div class="image-container">
-                                <img src="@imageUrl" class="food-image" alt="@title">
-                            </div>
-
-                            <!-- Content -->
-                            <div class="card-body">
-                                <h5 class="card-title text-center fw-bold text-success">@title</h5>
-                                <div class="meal-info text-center">
-                                    <p class="mb-2"><strong>⏱️ Thời gian:</strong> @readyInMinutes phút</p>
-                                    <p class="mb-2"><strong>🍽️ Khẩu phần:</strong> @servings người</p>
-                                </div>
-
-                                <div class="d-flex justify-content-center gap-2 mt-3">
-                                    <a href="@Url.Action("RecipeDetail", "AIMealPlanner", new { recipeId = mealId })" 
-                                       class="btn btn-success">
-                                        📖 Xem Công Thức
-                                    </a>
-                                    <a href="@sourceUrl" target="_blank" class="btn btn-outline-primary">
-                                        🔗 Nguồn Gốc
-                                    </a>
-                                </div>
+                    var meals = dayData["meals"];
+                    var nutrients = dayData["nutrients"];
+                    
+                    <div id="day-@dayIndex" class="day-container" style="display: @(dayIndex == 0 ? "block" : "none")">
+                        <!-- Daily Summary -->
+                        <div class="nutrition-summary text-center mb-4">
+                            <h5 class="text-success">Day @(dayIndex + 1) - @dayLabels[dayIndex]</h5>
+                            <div class="d-flex justify-content-center gap-4 flex-wrap">
+                                @if (nutrients != null)
+                                {
+                                    <div><strong>Calories:</strong> @((int)double.Parse(nutrients["calories"]?.ToString() ?? "0")) kcal</div>
+                                    <div><strong>Protein:</strong> @((int)double.Parse(nutrients["protein"]?.ToString() ?? "0"))g</div>
+                                    <div><strong>Fat:</strong> @((int)double.Parse(nutrients["fat"]?.ToString() ?? "0"))g</div>
+                                    <div><strong>Carbs:</strong> @((int)double.Parse(nutrients["carbohydrates"]?.ToString() ?? "0"))g</div>
+                                }
                             </div>
                         </div>
+
+                        <!-- Meals for this day -->
+                        <div class="container">
+                            @{
+                                int mealIndex = 0;
+                            }
+                            @foreach (var meal in meals)
+                            {
+                                var mealId = meal["id"]?.ToString() ?? "";
+                                var title = meal["title"]?.ToString() ?? "Unknown";
+                                var readyInMinutes = meal["readyInMinutes"]?.ToString() ?? "N/A";
+                                var servings = meal["servings"]?.ToString() ?? "1";
+                                var imageRaw = meal["image"]?.ToString() ?? "";
+                                var imageUrl = string.IsNullOrEmpty(imageRaw) ? "/images/default.jpg" : 
+                                               (imageRaw.StartsWith("http") ? imageRaw : $"https://spoonacular.com/recipeImages/{imageRaw}");
+                                var sourceUrl = meal["sourceUrl"]?.ToString() ?? "#";
+
+                                <div class="meal-section mb-5">
+                                    <h4 class="text-center fw-bold text-success mb-3">
+                                        @{
+                                            var mealLabel = mealIndex == 0 ? "Breakfast" : (mealIndex == 1 ? "Lunch" : "Dinner");
+                                        }
+                                        @mealLabel
+                                    </h4>
+
+                                    <div class="card shadow-sm meal-card">
+                                        <div class="image-container">
+                                            <img src="@imageUrl" class="food-image" alt="@title">
+                                        </div>
+
+                                        <div class="card-body">
+                                            <h5 class="card-title text-center fw-bold text-success">@title</h5>
+                                            <div class="meal-info text-center">
+                                                <p class="mb-2"><strong>Time:</strong> @readyInMinutes minutes</p>
+                                                <p class="mb-2"><strong>Servings:</strong> @servings</p>
+                                            </div>
+
+                                            <div class="d-flex justify-content-center gap-2 mt-3">
+                                                <a href="@Url.Action("RecipeDetail", "AIMealPlanner", new { recipeId = mealId })" 
+                                                   class="btn btn-success">
+                                                    View Recipe
+                                                </a>
+                                                <a href="@sourceUrl" target="_blank" class="btn btn-outline-primary">
+                                                    Source
+                                                </a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                mealIndex++;
+                            }
+                        </div>
                     </div>
-                    
-                    mealIndex++;
                 }
-            </div>
+            }
         }
         else
         {
-            <div class="text-center mt-5">
-                <p class="text-danger fw-bold">⚠️ Không tìm thấy thực đơn trong phản hồi API.</p>
-                @if (ViewBag.ApiRawResponse != null)
-                {
-                    <p class="text-muted">Vui lòng kiểm tra phần Debug Log bên dưới.</p>
-                }
+            <div class="alert alert-warning text-center">
+                <strong>No weekly meal plan data available.</strong>
             </div>
         }
     }
     catch (Exception ex)
     {
         <div class="alert alert-danger text-center">
-            <p>Lỗi xử lý dữ liệu view: @ex.Message</p>
+            <strong>Error parsing weekly meal plan:</strong> @ex.Message
         </div>
     }
 }
 else
 {
-    if (ViewBag.ErrorMessage == null) 
-    {
-        <div class="text-center mt-5">
-            <p class="text-muted">Không có dữ liệu hiển thị.</p>
-        </div>
-    }
+    <div class="alert alert-info text-center">
+        <strong>No data to display.</strong>
+    </div>
 }
 
-<!-- Always show Raw Response for Debugging -->
+<!-- API Debug Log -->
 @if (ViewBag.ApiRawResponse != null)
 {
     <div class="container mt-5">
         <div class="alert alert-info">
-            <h4>🐛 API Debug Log</h4>
+            <h4>API Debug Log</h4>
             <details>
                 <summary>Click to view raw API response</summary>
                 <pre style="background-color: #f8f9fa; padding: 15px; border-radius: 5px; white-space: pre-wrap; word-break: break-all; max-height: 400px; overflow-y: auto;">@ViewBag.ApiRawResponse</pre>
@@ -136,11 +160,36 @@ else
     </div>
 }
 
+<!-- JavaScript for day switching -->
+<script>
+    function showDayMeals(dayIndex) {
+        // Hide all day containers
+        document.querySelectorAll('.day-container').forEach(el => {
+            el.style.display = 'none';
+        });
+        
+        // Show selected day
+        document.getElementById('day-' + dayIndex).style.display = 'block';
+        
+        // Scroll to top of meal plan
+        window.scrollTo({ top: 200, behavior: 'smooth' });
+    }
+</script>
+
 <!-- CSS -->
 <style>
     .title-menu {
         margin-top: 150px;
         text-align: center;
+    }
+
+    .day-selector-container {
+        max-width: 600px;
+        margin: 0 auto;
+    }
+
+    .day-container {
+        transition: opacity 0.3s ease-in-out;
     }
 
     /* Image container */

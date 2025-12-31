@@ -93,6 +93,7 @@ public class AIMealPlannerController : Controller
 
             if (!string.IsNullOrWhiteSpace(weeklyMealPlanJson) && !weeklyMealPlanJson.Contains("\"error\""))
             {
+                // Simply pass the raw weekly JSON - view will parse it
                 ViewBag.WeeklyMealPlan = weeklyMealPlanJson;
                 ViewBag.ErrorMessage = null;
             }
