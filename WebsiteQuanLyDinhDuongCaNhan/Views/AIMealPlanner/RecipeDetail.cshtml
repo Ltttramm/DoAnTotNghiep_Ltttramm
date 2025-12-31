@@ -21,7 +21,9 @@ else if (ViewBag.RecipeData != null)
     {
         var recipeData = Newtonsoft.Json.Linq.JObject.Parse(ViewBag.RecipeData);
         var title = recipeData["title"]?.ToString() ?? "Unknown Recipe";
-        var image = recipeData["image"]?.ToString() ?? "";
+        var imageRaw = recipeData["image"]?.ToString() ?? "";
+        // Fix image URL - prepend Spoonacular CDN if it's a relative path
+        var image = imageRaw.StartsWith("http") ? imageRaw : $"https://spoonacular.com/recipeImages/{imageRaw}";
         var readyInMinutes = recipeData["readyInMinutes"]?.ToString() ?? "N/A";
         var servings = recipeData["servings"]?.ToString() ?? "1";
         var summary = recipeData["summary"]?.ToString() ?? "";
