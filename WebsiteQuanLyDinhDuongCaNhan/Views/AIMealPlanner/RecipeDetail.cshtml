@@ -1,6 +1,6 @@
 @{
     Layout = "~/Views/Shared/_Layout.cshtml";
-    ViewBag.Title = "Chi Tiết Công Thức";
+    ViewBag.Title = "Recipe Details";
     ViewData["HideFooter"] = true;
 }
 
@@ -38,7 +38,7 @@ else if (ViewBag.RecipeData != null)
             <!-- Back Button -->
             <div class="mb-4">
                 <a href="@Url.Action("MealPlan", "AIMealPlanner")" class="btn btn-outline-secondary">
-                    ← Quay lại Thực Đơn
+                    &larr; Back to Meal Plan
                 </a>
             </div>
 
@@ -56,10 +56,10 @@ else if (ViewBag.RecipeData != null)
                             <h1 class="recipe-title">@title</h1>
                             <div class="recipe-meta">
                                 <span class="badge bg-success me-2">
-                                    <i class="bi bi-clock"></i> @readyInMinutes phút
+                                    <i class="bi bi-clock"></i> @readyInMinutes minutes
                                 </span>
                                 <span class="badge bg-info">
-                                    <i class="bi bi-people"></i> @servings khẩu phần
+                                    <i class="bi bi-people"></i> @servings servings
                                 </span>
                             </div>
                             @if (!string.IsNullOrEmpty(summary))
@@ -70,7 +70,7 @@ else if (ViewBag.RecipeData != null)
                             }
                             <div class="mt-3">
                                 <a href="@sourceUrl" target="_blank" class="btn btn-outline-primary">
-                                    🔗 Nguồn Gốc
+                                    [Source]
                                 </a>
                             </div>
                         </div>
@@ -179,7 +179,7 @@ else if (ViewBag.RecipeData != null)
             <!-- Bottom Back Button -->
             <div class="text-center mt-4 mb-5">
                 <a href="@Url.Action("MealPlan", "AIMealPlanner")" class="btn btn-primary btn-lg">
-                    ← Quay lại Thực Đơn
+                    &larr; Back to Meal Plan
                 </a>
             </div>
         </div>
