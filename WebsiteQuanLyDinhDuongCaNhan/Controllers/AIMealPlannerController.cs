@@ -129,6 +129,46 @@ public class AIMealPlannerController : Controller
     }
 
     /// <summary>
+    /// Display detailed recipe page with instructions and nutrition
+    /// </summary>
+    public async Task<ActionResult> RecipeDetail(int recipeId)
+    {
+        try
+        {
+            string logEntry = $"[RECIPE DETAIL] Fetching recipe ID: {recipeId}";
+            System.Diagnostics.Debug.WriteLine(logEntry);
+            Console.WriteLine(logEntry);
+            System.Diagnostics.Trace.WriteLine(logEntry);
+
+            string recipeJson = await _spoonacularService.GetRecipeInformationAsync(recipeId);
+            
+            if (!string.IsNullOrWhiteSpace(recipeJson) && !recipeJson.Contains("\"error\""))
+            {
+                ViewBag.RecipeData = recipeJson;
+                ViewBag.RecipeId = recipeId;
+                return View("RecipeDetail");
+            }
+            else
+            {
+                ViewBag.ErrorMessage = "Không thể tải thông tin công thức. Vui lòng thử lại.";
+                ViewBag.RecipeData = null;
+                return View("RecipeDetail");
+            }
+        }
+        catch (Exception ex)
+        {
+            string errorLog = $"[ERROR] Exception in RecipeDetail: {ex.Message}";
+            System.Diagnostics.Debug.WriteLine(errorLog);
+            Console.WriteLine(errorLog);
+            System.Diagnostics.Trace.WriteLine(errorLog);
+            
+            ViewBag.ErrorMessage = $"Đã xảy ra lỗi: {ex.Message}";
+            ViewBag.RecipeData = null;
+            return View("RecipeDetail");
+        }
+    }
+
+    /// <summary>
     /// AJAX endpoint to fetch detailed recipe information
     /// </summary>
     [HttpGet]

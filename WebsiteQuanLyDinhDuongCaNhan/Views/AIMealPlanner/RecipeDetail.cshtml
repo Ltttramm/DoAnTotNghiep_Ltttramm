@@ -1,0 +1,335 @@
+@{
+    ViewBag.Title = "Chi Tiết Công Thức";
+    ViewData["HideFooter"] = true;
+}
+
+@if (ViewBag.ErrorMessage != null)
+{
+    <div class="container mt-[150px]">
+        <div class="alert alert-danger text-center">
+            <h4>⚠️ Lỗi</h4>
+            <p>@ViewBag.ErrorMessage</p>
+            <a href="@Url.Action("MealPlan", "AIMealPlanner")" class="btn btn-primary mt-3">
+                ← Quay lại Thực Đơn
+            </a>
+        </div>
+    </div>
+}
+else if (ViewBag.RecipeData != null)
+{
+    try
+    {
+        var recipeData = Newtonsoft.Json.Linq.JObject.Parse(ViewBag.RecipeData);
+        var title = recipeData["title"]?.ToString() ?? "Unknown Recipe";
+        var image = recipeData["image"]?.ToString() ?? "";
+        var readyInMinutes = recipeData["readyInMinutes"]?.ToString() ?? "N/A";
+        var servings = recipeData["servings"]?.ToString() ?? "1";
+        var summary = recipeData["summary"]?.ToString() ?? "";
+        var sourceUrl = recipeData["sourceUrl"]?.ToString() ?? "#";
+        
+        var ingredients = recipeData["extendedIngredients"];
+        var instructions = recipeData["analyzedInstructions"];
+        var nutrition = recipeData["nutrition"];
+
+        <div class="container recipe-detail-container mt-[150px]">
+            <!-- Back Button -->
+            <div class="mb-4">
+                <a href="@Url.Action("MealPlan", "AIMealPlanner")" class="btn btn-outline-secondary">
+                    ← Quay lại Thực Đơn
+                </a>
+            </div>
+
+            <!-- Recipe Header -->
+            <div class="recipe-header card shadow-lg mb-4">
+                <div class="row g-0">
+                    <div class="col-md-5">
+                        @if (!string.IsNullOrEmpty(image))
+                        {
+                            <img src="@image" class="recipe-main-image" alt="@title">
+                        }
+                    </div>
+                    <div class="col-md-7">
+                        <div class="card-body p-4">
+                            <h1 class="recipe-title">@title</h1>
+                            <div class="recipe-meta">
+                                <span class="badge bg-success me-2">
+                                    <i class="bi bi-clock"></i> @readyInMinutes phút
+                                </span>
+                                <span class="badge bg-info">
+                                    <i class="bi bi-people"></i> @servings khẩu phần
+                                </span>
+                            </div>
+                            @if (!string.IsNullOrEmpty(summary))
+                            {
+                                <div class="recipe-summary mt-3">
+                                    @Html.Raw(summary)
+                                </div>
+                            }
+                            <div class="mt-3">
+                                <a href="@sourceUrl" target="_blank" class="btn btn-outline-primary">
+                                    🔗 Nguồn Gốc
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <!-- Left Column: Ingredients & Instructions -->
+                <div class="col-lg-8">
+                    <!-- Ingredients Section -->
+                    @if (ingredients != null && ingredients.HasValues)
+                    {
+                        <div class="card shadow-sm mb-4">
+                            <div class="card-header bg-success text-white">
+                                <h3 class="mb-0">🌿 Nguyên Liệu</h3>
+                            </div>
+                            <div class="card-body">
+                                <ul class="ingredients-list">
+                                    @foreach (var ingredient in ingredients)
+                                    {
+                                        var original = ingredient["original"]?.ToString() ?? "";
+                                        <li>✔️ @original</li>
+                                    }
+                                </ul>
+                            </div>
+                        </div>
+                    }
+
+                    <!-- Instructions Section -->
+                    @if (instructions != null && instructions.HasValues && instructions[0]["steps"] != null)
+                    {
+                        <div class="card shadow-sm mb-4">
+                            <div class="card-header bg-primary text-white">
+                                <h3 class="mb-0">👨‍🍳 Hướng Dẫn Nấu</h3>
+                            </div>
+                            <div class="card-body">
+                                <ol class="instructions-list">
+                                    @foreach (var step in instructions[0]["steps"])
+                                    {
+                                        var stepNumber = step["number"]?.ToString() ?? "";
+                                        var stepText = step["step"]?.ToString() ?? "";
+                                        <li class="instruction-step">
+                                            <strong>Bước @stepNumber:</strong> @stepText
+                                        </li>
+                                    }
+                                </ol>
+                            </div>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="alert alert-info">
+                            <p>Không có hướng dẫn chi tiết. Vui lòng xem nguồn gốc để biết thêm thông tin.</p>
+                        </div>
+                    }
+                </div>
+
+                <!-- Right Column: Nutrition -->
+                <div class="col-lg-4">
+                    @if (nutrition != null && nutrition["nutrients"] != null)
+                    {
+                        var nutrients = nutrition["nutrients"];
+                        
+                        <div class="card shadow-sm mb-4 sticky-nutrition">
+                            <div class="card-header bg-warning text-dark">
+                                <h3 class="mb-0">📊 Dinh Dưỡng Chi Tiết</h3>
+                                <small class="text-muted">Per serving</small>
+                            </div>
+                            <div class="card-body">
+                                <div class="nutrition-grid">
+                                    @foreach (var nutrient in nutrients)
+                                    {
+                                        var name = nutrient["name"]?.ToString() ?? "";
+                                        var amount = nutrient["amount"]?.ToString() ?? "0";
+                                        var unit = nutrient["unit"]?.ToString() ?? "";
+                                        var percentOfDaily = nutrient["percentOfDailyNeeds"]?.ToString() ?? "";
+                                        
+                                        double amountValue = 0;
+                                        double.TryParse(amount, out amountValue);
+                                        
+                                        <div class="nutrition-item">
+                                            <div class="nutrition-name">@name</div>
+                                            <div class="nutrition-value">
+                                                @amountValue.ToString("F1") @unit
+                                                @if (!string.IsNullOrEmpty(percentOfDaily) && percentOfDaily != "0")
+                                                {
+                                                    <span class="text-muted small">(@percentOfDaily%)</span>
+                                                }
+                                            </div>
+                                        </div>
+                                    }
+                                </div>
+                            </div>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="alert alert-warning">
+                            <p>Không có thông tin dinh dưỡng chi tiết.</p>
+                        </div>
+                    }
+                </div>
+            </div>
+
+            <!-- Bottom Back Button -->
+            <div class="text-center mt-4 mb-5">
+                <a href="@Url.Action("MealPlan", "AIMealPlanner")" class="btn btn-primary btn-lg">
+                    ← Quay lại Thực Đơn
+                </a>
+            </div>
+        </div>
+    }
+    catch (Exception ex)
+    {
+        <div class="container mt-[150px]">
+            <div class="alert alert-danger">
+                <h4>Lỗi xử lý dữ liệu</h4>
+                <p>@ex.Message</p>
+            </div>
+        </div>
+    }
+}
+
+<style>
+    .recipe-detail-container {
+        max-width: 1400px;
+        margin: 0 auto;
+    }
+
+    .recipe-header {
+        border: none;
+        border-radius: 15px;
+        overflow: hidden;
+    }
+
+    .recipe-main-image {
+        width: 100%;
+        height: 400px;
+        object-fit: cover;
+    }
+
+    .recipe-title {
+        color: #C4A46B;
+        font-size: 2rem;
+        font-weight: bold;
+        margin-bottom: 1rem;
+    }
+
+    .recipe-meta {
+        margin-bottom: 1rem;
+    }
+
+    .recipe-meta .badge {
+        font-size: 1rem;
+        padding: 0.5rem 1rem;
+    }
+
+    .recipe-summary {
+        color: #666;
+        line-height: 1.6;
+    }
+
+    .recipe-summary p {
+        margin-bottom: 0.5rem;
+    }
+
+    .card-header h3 {
+        font-size: 1.5rem;
+        font-weight: bold;
+    }
+
+    .ingredients-list {
+        list-style: none;
+        padding: 0;
+    }
+
+    .ingredients-list li {
+        padding: 0.75rem;
+        border-bottom: 1px solid #f0f0f0;
+        font-size: 1.05rem;
+    }
+
+    .ingredients-list li:last-child {
+        border-bottom: none;
+    }
+
+    .instructions-list {
+        padding-left: 0;
+        counter-reset: step-counter;
+    }
+
+    .instruction-step {
+        padding: 1.25rem;
+        margin-bottom: 1rem;
+        background: #f8f9fa;
+        border-left: 4px solid #0d6efd;
+        border-radius: 8px;
+        line-height: 1.8;
+    }
+
+    .instruction-step strong {
+        color: #0d6efd;
+        display: block;
+        margin-bottom: 0.5rem;
+    }
+
+    .sticky-nutrition {
+        position: sticky;
+        top: 20px;
+    }
+
+    .nutrition-grid {
+        max-height: 600px;
+        overflow-y: auto;
+    }
+
+    .nutrition-item {
+        display: flex;
+        justify-content: space-between;
+        padding: 0.75rem;
+        border-bottom: 1px solid #f0f0f0;
+    }
+
+    .nutrition-item:nth-child(even) {
+        background-color: #f8f9fa;
+    }
+
+    .nutrition-name {
+        font-weight: 500;
+        color: #333;
+    }
+
+    .nutrition-value {
+        font-weight: bold;
+        color: #C4A46B;
+        text-align: right;
+    }
+
+    .btn-outline-secondary {
+        border-color: #C4A46B;
+        color: #C4A46B;
+    }
+
+    .btn-outline-secondary:hover {
+        background-color: #C4A46B;
+        border-color: #C4A46B;
+        color: white;
+    }
+
+    @media (max-width: 768px) {
+        .recipe-main-image {
+            height: 250px;
+        }
+
+        .recipe-title {
+            font-size: 1.5rem;
+        }
+
+        .sticky-nutrition {
+            position: relative;
+            top: 0;
+        }
+    }
+</style>

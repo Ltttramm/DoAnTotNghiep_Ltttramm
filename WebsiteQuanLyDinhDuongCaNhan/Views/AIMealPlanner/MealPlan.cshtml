@@ -75,22 +75,13 @@
                                 </div>
 
                                 <div class="d-flex justify-content-center gap-2 mt-3">
-                                    <button type="button" class="btn btn-success" onclick="showRecipeInstructions('@mealId', '@title')">
+                                    <a href="@Url.Action("RecipeDetail", "AIMealPlanner", new { recipeId = mealId })" 
+                                       class="btn btn-success">
                                         📖 Xem Công Thức
-                                    </button>
+                                    </a>
                                     <a href="@sourceUrl" target="_blank" class="btn btn-outline-primary">
                                         🔗 Nguồn Gốc
                                     </a>
-                                </div>
-
-                                <!-- Recipe details container (hidden by default) -->
-                                <div id="recipe-details-@mealId" class="recipe-details mt-4" style="display:none;">
-                                    <div class="loading text-center">
-                                        <div class="spinner-border text-success" role="status">
-                                            <span class="visually-hidden">Đang tải...</span>
-                                        </div>
-                                        <p>Đang tải công thức nấu ăn...</p>
-                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -141,70 +132,6 @@ else
         </div>
     </div>
 }
-
-<!-- JavaScript for recipe details -->
-<script>
-    async function showRecipeInstructions(recipeId, recipeTitle) {
-        const detailsContainer = document.getElementById(`recipe-details-${recipeId}`);
-        
-        // Toggle visibility
-        if (detailsContainer.style.display === 'block') {
-            detailsContainer.style.display = 'none';
-            return;
-        }
-
-        // Show loading
-        detailsContainer.style.display = 'block';
-        
-        try {
-            // Fetch recipe information from server
-            const response = await fetch(`/AIMealPlanner/GetRecipeDetails?recipeId=${recipeId}`);
-            const data = await response.json();
-
-            if (data.error) {
-                detailsContainer.innerHTML = `<div class="alert alert-danger">${data.error}</div>`;
-                return;
-            }
-
-            // Build HTML for instructions
-            let html = '<div class="recipe-content">';
-            
-            // Ingredients
-            if (data.extendedIngredients && data.extendedIngredients.length > 0) {
-                html += '<h6 class="fw-bold text-success mt-3">🌿 Nguyên liệu:</h6><ul class="list-unstyled">';
-                data.extendedIngredients.forEach(ing => {
-                    html += `<li>✔️ ${ing.original}</li>`;
-                });
-                html += '</ul>';
-            }
-
-            // Instructions
-            if (data.analyzedInstructions && data.analyzedInstructions.length > 0) {
-                html += '<h6 class="fw-bold text-success mt-3">👨‍🍳 Hướng Dẫn Nấu:</h6><ol>';
-                data.analyzedInstructions[0].steps.forEach(step => {
-                    html += `<li class="mb-2">${step.step}</li>`;
-                });
-                html += '</ol>';
-            }
-
-            // Nutrition
-            if (data.nutrition && data.nutrition.nutrients) {
-                html += '<h6 class="fw-bold text-success mt-3">📊 Dinh Dưỡng Chi Tiết:</h6>';
-                html += '<div class="nutrition-grid">';
-                data.nutrition.nutrients.slice(0, 10).forEach(nutrient => {
-                    html += `<div><strong>${nutrient.name}:</strong> ${nutrient.amount.toFixed(1)} ${nutrient.unit}</div>`;
-                });
-                html += '</div>';
-            }
-
-            html += '</div>';
-            detailsContainer.innerHTML = html;
-        } catch (error) {
-            console.error('Error fetching recipe details:', error);
-            detailsContainer.innerHTML = '<div class="alert alert-danger">Không thể tải công thức. Vui lòng thử lại.</div>';
-        }
-    }
-</script>
 
 <!-- CSS -->
 <style>
