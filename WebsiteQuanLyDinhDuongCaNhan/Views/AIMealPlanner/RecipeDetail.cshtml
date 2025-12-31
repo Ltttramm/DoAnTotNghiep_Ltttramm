@@ -93,7 +93,26 @@ else if (ViewBag.RecipeData != null)
                                     @foreach (var ingredient in ingredients)
                                     {
                                         var original = ingredient["original"]?.ToString() ?? "";
-                                        <li>- @original</li>
+                                        var nutrition = ingredient["nutrition"];
+                                        var calories = "0";
+                                        
+                                        // Extract calories from nutrition data
+                                        if (nutrition != null && nutrition["nutrients"] != null)
+                                        {
+                                            foreach (var nutrient in nutrition["nutrients"])
+                                            {
+                                                if (nutrient["name"]?.ToString() == "Calories")
+                                                {
+                                                    calories = nutrient["amount"]?.ToString() ?? "0";
+                                                    break;
+                                                }
+                                            }
+                                        }
+                                        
+                                        <li>
+                                            <span class="ingredient-name">- @original</span>
+                                            <span class="ingredient-calories">(@calories kcal)</span>
+                                        </li>
                                     }
                                 </ul>
                             </div>
@@ -252,6 +271,20 @@ else if (ViewBag.RecipeData != null)
         padding: 0.75rem;
         border-bottom: 1px solid #f0f0f0;
         font-size: 1.05rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .ingredient-name {
+        flex: 1;
+    }
+
+    .ingredient-calories {
+        color: #C4A46B;
+        font-weight: bold;
+        font-size: 0.9rem;
+        margin-left: 10px;
     }
 
     .ingredients-list li:last-child {
