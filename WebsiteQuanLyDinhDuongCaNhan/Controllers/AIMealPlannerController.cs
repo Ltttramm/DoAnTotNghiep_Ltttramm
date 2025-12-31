@@ -23,17 +23,41 @@ public class AIMealPlannerController : Controller
     [Route("AIMealPlanner/MealPlan")]
     public async Task<ActionResult> MealPlan()
     {
+        string entryLog = "[ENTRY] MealPlan action called";
+        System.Diagnostics.Debug.WriteLine(entryLog);
+        Console.WriteLine(entryLog);
+        System.Diagnostics.Trace.WriteLine(entryLog);
+        
         try
         {
             // Lấy thông tin người dùng từ database/session
+            string getUserLog = "[STEP 1] Getting current user...";
+            System.Diagnostics.Debug.WriteLine(getUserLog);
+            Console.WriteLine(getUserLog);
+            System.Diagnostics.Trace.WriteLine(getUserLog);
+            
             User user = GetCurrentUser();
 
             if (user == null)
             {
+                string noUserLog = "[ERROR] User is null - redirecting to login";
+                System.Diagnostics.Debug.WriteLine(noUserLog);
+                Console.WriteLine(noUserLog);
+                System.Diagnostics.Trace.WriteLine(noUserLog);
                 return RedirectToAction("Login", "Auth");
             }
+            
+            string userFoundLog = $"[STEP 2] User found: {user.FullName} (ID: {user.UserId})";
+            System.Diagnostics.Debug.WriteLine(userFoundLog);
+            Console.WriteLine(userFoundLog);
+            System.Diagnostics.Trace.WriteLine(userFoundLog);
 
             // Tính TDEE
+            string calcLog = "[STEP 3] Calculating TDEE...";
+            System.Diagnostics.Debug.WriteLine(calcLog);
+            Console.WriteLine(calcLog);
+            System.Diagnostics.Trace.WriteLine(calcLog);
+            
             double tdee = _userService.CalculateTDEE(user);
             ViewBag.TDEE = tdee;
 
@@ -44,6 +68,11 @@ public class AIMealPlannerController : Controller
             System.Diagnostics.Trace.WriteLine(tdeeLog);
 
             // Generate daily meal plan (3 meals) based on TDEE using Spoonacular
+            string apiCallLog = "[STEP 4] Calling Spoonacular API...";
+            System.Diagnostics.Debug.WriteLine(apiCallLog);
+            Console.WriteLine(apiCallLog);
+            System.Diagnostics.Trace.WriteLine(apiCallLog);
+            
             string mealPlanJson = await _spoonacularService.GenerateDailyMealPlanAsync(tdee);
 
             // Debug logging (output to multiple channels for visibility)
@@ -77,10 +106,21 @@ public class AIMealPlannerController : Controller
         }
         catch (Exception ex)
         {
-            string errorLog = $"[ERROR] Lỗi trong MealPlan controller: {ex.Message}";
+            string errorLog = $"[ERROR] Exception in MealPlan controller: {ex.Message}";
+            string stackLog = $"[ERROR] Stack Trace: {ex.StackTrace}";
+            string innerLog = ex.InnerException != null ? $"[ERROR] Inner Exception: {ex.InnerException.Message}" : "[ERROR] No inner exception";
+            
             System.Diagnostics.Debug.WriteLine(errorLog);
+            System.Diagnostics.Debug.WriteLine(stackLog);
+            System.Diagnostics.Debug.WriteLine(innerLog);
+            
             Console.WriteLine(errorLog);
+            Console.WriteLine(stackLog);
+            Console.WriteLine(innerLog);
+            
             System.Diagnostics.Trace.WriteLine(errorLog);
+            System.Diagnostics.Trace.WriteLine(stackLog);
+            System.Diagnostics.Trace.WriteLine(innerLog);
             ViewBag.MealPlan = null;
             ViewBag.ErrorMessage = $"Đã xảy ra lỗi hệ thống: {ex.Message}";
             ViewBag.ApiRawResponse = $"EXCEPTION STACK TRACE:\n{ex.ToString()}";

@@ -5,6 +5,11 @@ public class UserService
 {
     public double CalculateTDEE(User user)
     {
+        string startLog = $"[TDEE CALC] Starting calculation for user: {user?.FullName ?? "NULL"}";
+        System.Diagnostics.Debug.WriteLine(startLog);
+        Console.WriteLine(startLog);
+        System.Diagnostics.Trace.WriteLine(startLog);
+        
         double bmr;
         int age = DateTime.Now.Year - user.DateOfBirth.Value.Year;
         if (DateTime.Now.DayOfYear < user.DateOfBirth.Value.DayOfYear)
@@ -38,7 +43,14 @@ public class UserService
                 break;
         }
 
-        return bmr * activityFactor;
+        double tdee = bmr * activityFactor;
+        
+        string resultLog = $"[TDEE CALC] Result - Age: {age}, Gender: {user.Gender}, Weight: {user.Weight}kg, Height: {user.Height}cm, Activity: {user.ActivityLevel}, BMR: {bmr:F2}, TDEE: {tdee:F2}";
+        System.Diagnostics.Debug.WriteLine(resultLog);
+        Console.WriteLine(resultLog);
+        System.Diagnostics.Trace.WriteLine(resultLog);
+        
+        return tdee;
 
     }
 
