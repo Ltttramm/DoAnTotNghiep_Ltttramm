@@ -4,11 +4,6 @@
     ViewData["HideFooter"] = true;
 }
 
-@* Explicit charset declaration to ensure UTF-8 encoding *@
-@section head {
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-}
-
 @if (ViewBag.ErrorMessage != null)
 {
     <div class="container mt-[150px]">
