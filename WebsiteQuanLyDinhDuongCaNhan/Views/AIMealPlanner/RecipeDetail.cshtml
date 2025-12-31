@@ -86,14 +86,14 @@ else if (ViewBag.RecipeData != null)
                     {
                         <div class="card shadow-sm mb-4">
                             <div class="card-header bg-success text-white">
-                                <h3 class="mb-0">🌿 Ingredients</h3>
+                                <h3 class="mb-0">Ingredients</h3>
                             </div>
                             <div class="card-body">
                                 <ul class="ingredients-list">
                                     @foreach (var ingredient in ingredients)
                                     {
                                         var original = ingredient["original"]?.ToString() ?? "";
-                                        <li>✔️ @original</li>
+                                        <li>- @original</li>
                                     }
                                 </ul>
                             </div>
@@ -105,7 +105,7 @@ else if (ViewBag.RecipeData != null)
                     {
                         <div class="card shadow-sm mb-4">
                             <div class="card-header bg-primary text-white">
-                                <h3 class="mb-0">👨‍🍳 Instructions</h3>
+                                <h3 class="mb-0">Cooking Instructions</h3>
                             </div>
                             <div class="card-body">
                                 <ol class="instructions-list">
@@ -137,7 +137,7 @@ else if (ViewBag.RecipeData != null)
                         
                         <div class="card shadow-sm mb-4 sticky-nutrition">
                             <div class="card-header bg-warning text-dark">
-                                <h3 class="mb-0">📊 Nutrition Facts</h3>
+                                <h3 class="mb-0">Nutrition Facts</h3>
                                 <small class="text-muted">Per serving</small>
                             </div>
                             <div class="card-body">
