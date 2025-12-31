@@ -105,9 +105,9 @@
                                                 <p class="mb-2"><strong>Servings:</strong> @servings</p>
                                             </div>
 
-                                            <div class="d-flex justify-content-center gap-2 mt-3">
+                                            <div class="text-center mt-3">
                                                 <a href="@Url.Action("RecipeDetail", "AIMealPlanner", new { recipeId = mealId })" 
-                                                   class="btn btn-success">
+                                                   class="btn btn-success me-2">
                                                     View Recipe
                                                 </a>
                                                 <a href="@sourceUrl" target="_blank" class="btn btn-outline-primary">
@@ -147,7 +147,7 @@ else
 }
 
 <!-- API Debug Log -->
-@if (ViewBag.ApiRawResponse != null)
+<!-- @if (ViewBag.ApiRawResponse != null)
 {
     <div class="container mt-5">
         <div class="alert alert-info">
@@ -158,7 +158,7 @@ else
             </details>
         </div>
     </div>
-}
+} -->
 
 <!-- JavaScript for day switching -->
 <script>
