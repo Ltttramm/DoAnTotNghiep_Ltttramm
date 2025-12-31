@@ -47,7 +47,7 @@ public class AIMealPlannerController : Controller
                 return RedirectToAction("Login", "Auth");
             }
             
-            string userFoundLog = $"[STEP 2] User found: {user.FullName} (ID: {user.UserId})";
+            string userFoundLog = $"[STEP 2] User found: {user.FullName} (ID: {user.UserID})";
             System.Diagnostics.Debug.WriteLine(userFoundLog);
             Console.WriteLine(userFoundLog);
             System.Diagnostics.Trace.WriteLine(userFoundLog);
