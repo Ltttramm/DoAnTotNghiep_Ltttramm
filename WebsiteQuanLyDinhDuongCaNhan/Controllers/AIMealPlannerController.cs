@@ -67,17 +67,17 @@ public class AIMealPlannerController : Controller
             Console.WriteLine(tdeeLog);
             System.Diagnostics.Trace.WriteLine(tdeeLog);
 
-            // Generate daily meal plan (3 meals) based on TDEE using Spoonacular
-            string apiCallLog = "[STEP 4] Calling Spoonacular API...";
+            // Generate weekly meal plan (7 days, 3 meals per day) based on TDEE using Spoonacular
+            string apiCallLog = "[STEP 4] Calling Spoonacular WEEKLY API...";
             System.Diagnostics.Debug.WriteLine(apiCallLog);
             Console.WriteLine(apiCallLog);
             System.Diagnostics.Trace.WriteLine(apiCallLog);
             
-            string mealPlanJson = await _spoonacularService.GenerateDailyMealPlanAsync(tdee);
+            string weeklyMealPlanJson = await _spoonacularService.GenerateWeeklyMealPlanAsync(tdee);
 
             // Debug logging (output to multiple channels for visibility)
-            string lengthLog = $"[DEBUG] Spoonacular Response Length: {mealPlanJson?.Length ?? 0}";
-            string responseLog = $"[DEBUG] Spoonacular Response: {mealPlanJson}";
+            string lengthLog = $"[DEBUG] Spoonacular Weekly Response Length: {weeklyMealPlanJson?.Length ?? 0}";
+            string responseLog = $"[DEBUG] Spoonacular Weekly Response: {weeklyMealPlanJson}";
             
             System.Diagnostics.Debug.WriteLine(lengthLog);
             System.Diagnostics.Debug.WriteLine(responseLog);
@@ -88,18 +88,18 @@ public class AIMealPlannerController : Controller
             System.Diagnostics.Trace.WriteLine(lengthLog);
             System.Diagnostics.Trace.WriteLine(responseLog);
 
-            // Pass meal plan to view
-            ViewBag.ApiRawResponse = mealPlanJson; // Always pass raw response for debugging
+            // Pass weekly meal plan to view
+            ViewBag.ApiRawResponse = weeklyMealPlanJson; // Always pass raw response for debugging
 
-            if (!string.IsNullOrWhiteSpace(mealPlanJson) && !mealPlanJson.Contains("\"error\""))
+            if (!string.IsNullOrWhiteSpace(weeklyMealPlanJson) && !weeklyMealPlanJson.Contains("\"error\""))
             {
-                ViewBag.MealPlan = mealPlanJson;
+                ViewBag.WeeklyMealPlan = weeklyMealPlanJson;
                 ViewBag.ErrorMessage = null;
             }
             else
             {
-                ViewBag.MealPlan = null;
-                ViewBag.ErrorMessage = "Không thể tải danh sách món ăn. Xem chi tiết lỗi bên dưới.";
+                ViewBag.WeeklyMealPlan = null;
+                ViewBag.ErrorMessage = "Unable to load weekly meal plan. See error details below.";
             }
 
             return View("MealPlan");

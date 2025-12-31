@@ -102,6 +102,85 @@ public class SpoonacularService
     }
 
     /// <summary>
+    /// Generate a weekly meal plan (7 days, 3 meals per day) based on target calories (TDEE)
+    /// </summary>
+    public async Task<string> GenerateWeeklyMealPlanAsync(double tdee, string diet = "", string exclude = "")
+    {
+        try
+        {
+            string url = $"{baseUrl}/mealplanner/generate";
+            url += $"?apiKey={apiKey}";
+            url += $"&timeFrame=week";  // Changed from 'day' to 'week'
+            url += $"&targetCalories={tdee.ToString("F0", System.Globalization.CultureInfo.InvariantCulture)}";
+
+            if (!string.IsNullOrEmpty(diet))
+            {
+                url += $"&diet={diet}";
+            }
+
+            if (!string.IsNullOrEmpty(exclude))
+            {
+                url += $"&exclude={exclude}";
+            }
+
+            // Detailed request logging
+            string logSeparator = "========== SPOONACULAR WEEKLY API REQUEST ==========";
+            string logUrl = $"[WEEKLY REQUEST] TDEE Value: {tdee}";
+            string logFullUrl = $"[WEEKLY REQUEST] Full URL: {url}";
+            
+            System.Diagnostics.Debug.WriteLine(logSeparator);
+            System.Diagnostics.Debug.WriteLine(logUrl);
+            System.Diagnostics.Debug.WriteLine(logFullUrl);
+            
+            Console.WriteLine(logSeparator);
+            Console.WriteLine(logUrl);
+            Console.WriteLine(logFullUrl);
+            
+            System.Diagnostics.Trace.WriteLine(logSeparator);
+            System.Diagnostics.Trace.WriteLine(logUrl);
+            System.Diagnostics.Trace.WriteLine(logFullUrl);
+
+            using (HttpClient client = new HttpClient())
+            {
+                System.Net.ServicePointManager.SecurityProtocol |= System.Net.SecurityProtocolType.Tls12;
+                client.DefaultRequestHeaders.Add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64)");
+
+                HttpResponseMessage response = await client.GetAsync(url);
+                string jsonData = await response.Content.ReadAsStringAsync();
+
+                string logStatus = $"[WEEKLY RESPONSE] Status: {response.StatusCode}";
+                string logContent = $"[WEEKLY RESPONSE] Content Length: {jsonData.Length} chars";
+                
+                System.Diagnostics.Debug.WriteLine(logStatus);
+                System.Diagnostics.Debug.WriteLine(logContent);
+                
+                Console.WriteLine(logStatus);
+                Console.WriteLine(logContent);
+                
+                System.Diagnostics.Trace.WriteLine(logStatus);
+                System.Diagnostics.Trace.WriteLine(logContent);
+
+                if (!response.IsSuccessStatusCode)
+                {
+                    return $"{{\"error\": \"API Error: {response.StatusCode} - {jsonData.Replace("\"", "'")}\"}}";
+                }
+
+                if (string.IsNullOrWhiteSpace(jsonData))
+                {
+                     return "{\"error\": \"API returned empty response\"}";
+                }
+
+                return jsonData;
+            }
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"[EXCEPTION] {ex.Message}");
+            return $"{{\"error\": \"Exception generating weekly meal plan: {ex.Message}\"}}";
+        }
+    }
+
+    /// <summary>
     /// Get detailed recipe information including cooking instructions and nutrition
     /// </summary>
     public async Task<string> GetRecipeInformationAsync(int recipeId)
