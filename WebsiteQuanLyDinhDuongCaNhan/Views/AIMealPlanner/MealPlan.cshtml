@@ -40,6 +40,9 @@
             </div>
 
             <div class="container">
+                @{
+                    int mealIndex = 0;
+                }
                 @foreach (var meal in meals)
                 {
                     var mealId = meal["id"]?.ToString() ?? "";
@@ -52,7 +55,6 @@
                     <div class="meal-section mb-5">
                         <h4 class="text-center fw-bold text-success mb-3">
                             @{
-                                var mealIndex = meals.ToList().IndexOf(meal);
                                 var mealLabel = mealIndex == 0 ? "🌅 Bữa Sáng" : (mealIndex == 1 ? "☀️ Bữa Trưa" : "🌙 Bữa Tối");
                             }
                             @mealLabel
@@ -93,6 +95,8 @@
                             </div>
                         </div>
                     </div>
+                    
+                    mealIndex++;
                 }
             </div>
         }
