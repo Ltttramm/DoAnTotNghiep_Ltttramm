@@ -93,13 +93,13 @@ else if (ViewBag.RecipeData != null)
                                     @foreach (var ingredient in ingredients)
                                     {
                                         var original = ingredient["original"]?.ToString() ?? "";
-                                        var nutrition = ingredient["nutrition"];
+                                        var ingredientNutrition = ingredient["nutrition"];
                                         var calories = "0";
                                         
                                         // Extract calories from nutrition data
-                                        if (nutrition != null && nutrition["nutrients"] != null)
+                                        if (ingredientNutrition != null && ingredientNutrition["nutrients"] != null)
                                         {
-                                            foreach (var nutrient in nutrition["nutrients"])
+                                            foreach (var nutrient in ingredientNutrition["nutrients"])
                                             {
                                                 if (nutrient["name"]?.ToString() == "Calories")
                                                 {
