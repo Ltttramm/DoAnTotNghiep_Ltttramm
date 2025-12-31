@@ -37,15 +37,27 @@ public class AIMealPlannerController : Controller
             double tdee = _userService.CalculateTDEE(user);
             ViewBag.TDEE = tdee;
 
-            // Debug logging
-            System.Diagnostics.Debug.WriteLine($"[DEBUG] User TDEE: {tdee}");
+            // Debug logging (output to multiple channels for visibility)
+            string tdeeLog = $"[DEBUG] User TDEE: {tdee}";
+            System.Diagnostics.Debug.WriteLine(tdeeLog);
+            Console.WriteLine(tdeeLog);
+            System.Diagnostics.Trace.WriteLine(tdeeLog);
 
             // Generate daily meal plan (3 meals) based on TDEE using Spoonacular
             string mealPlanJson = await _spoonacularService.GenerateDailyMealPlanAsync(tdee);
 
-            // Debug logging
-            System.Diagnostics.Debug.WriteLine($"[DEBUG] Spoonacular Response Length: {mealPlanJson?.Length ?? 0}");
-            System.Diagnostics.Debug.WriteLine($"[DEBUG] Spoonacular Response: {mealPlanJson}");
+            // Debug logging (output to multiple channels for visibility)
+            string lengthLog = $"[DEBUG] Spoonacular Response Length: {mealPlanJson?.Length ?? 0}";
+            string responseLog = $"[DEBUG] Spoonacular Response: {mealPlanJson}";
+            
+            System.Diagnostics.Debug.WriteLine(lengthLog);
+            System.Diagnostics.Debug.WriteLine(responseLog);
+            
+            Console.WriteLine(lengthLog);
+            Console.WriteLine(responseLog);
+            
+            System.Diagnostics.Trace.WriteLine(lengthLog);
+            System.Diagnostics.Trace.WriteLine(responseLog);
 
             // Pass meal plan to view
             ViewBag.ApiRawResponse = mealPlanJson; // Always pass raw response for debugging
@@ -65,7 +77,10 @@ public class AIMealPlannerController : Controller
         }
         catch (Exception ex)
         {
-            System.Diagnostics.Debug.WriteLine($"Lỗi trong MealPlan controller: {ex.Message}");
+            string errorLog = $"[ERROR] Lỗi trong MealPlan controller: {ex.Message}";
+            System.Diagnostics.Debug.WriteLine(errorLog);
+            Console.WriteLine(errorLog);
+            System.Diagnostics.Trace.WriteLine(errorLog);
             ViewBag.MealPlan = null;
             ViewBag.ErrorMessage = $"Đã xảy ra lỗi hệ thống: {ex.Message}";
             ViewBag.ApiRawResponse = $"EXCEPTION STACK TRACE:\n{ex.ToString()}";

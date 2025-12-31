@@ -40,9 +40,22 @@ public class SpoonacularService
                 url += $"&exclude={exclude}";
             }
 
-            // Detailed request logging
-            System.Diagnostics.Debug.WriteLine("========== SPOONACULAR API REQUEST ==========");
-            System.Diagnostics.Debug.WriteLine($"[REQUEST] Full URL: {url}");
+            // Detailed request logging (output to both Debug and Console for visibility)
+            string logSeparator = "========== SPOONACULAR API REQUEST ==========";
+            string logUrl = $"[REQUEST] TDEE Value: {tdee}";
+            string logFullUrl = $"[REQUEST] Full URL: {url}";
+            
+            System.Diagnostics.Debug.WriteLine(logSeparator);
+            System.Diagnostics.Debug.WriteLine(logUrl);
+            System.Diagnostics.Debug.WriteLine(logFullUrl);
+            
+            Console.WriteLine(logSeparator);
+            Console.WriteLine(logUrl);
+            Console.WriteLine(logFullUrl);
+            
+            System.Diagnostics.Trace.WriteLine(logSeparator);
+            System.Diagnostics.Trace.WriteLine(logUrl);
+            System.Diagnostics.Trace.WriteLine(logFullUrl);
 
             using (HttpClient client = new HttpClient())
             {
@@ -55,8 +68,17 @@ public class SpoonacularService
                 HttpResponseMessage response = await client.GetAsync(url);
                 string jsonData = await response.Content.ReadAsStringAsync();
 
-                System.Diagnostics.Debug.WriteLine($"[RESPONSE] Status: {response.StatusCode}");
-                System.Diagnostics.Debug.WriteLine($"[RESPONSE] Content: {jsonData}");
+                string logStatus = $"[RESPONSE] Status: {response.StatusCode}";
+                string logContent = $"[RESPONSE] Content: {jsonData}";
+                
+                System.Diagnostics.Debug.WriteLine(logStatus);
+                System.Diagnostics.Debug.WriteLine(logContent);
+                
+                Console.WriteLine(logStatus);
+                Console.WriteLine(logContent);
+                
+                System.Diagnostics.Trace.WriteLine(logStatus);
+                System.Diagnostics.Trace.WriteLine(logContent);
 
                 if (!response.IsSuccessStatusCode)
                 {
