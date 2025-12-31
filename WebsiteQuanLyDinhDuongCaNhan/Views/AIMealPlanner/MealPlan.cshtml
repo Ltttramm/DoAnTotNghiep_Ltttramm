@@ -49,7 +49,10 @@
                     var title = meal["title"]?.ToString() ?? "Unknown";
                     var readyInMinutes = meal["readyInMinutes"]?.ToString() ?? "N/A";
                     var servings = meal["servings"]?.ToString() ?? "1";
-                    var imageUrl = meal["image"]?.ToString() ?? "/images/default.jpg";
+                    var imageRaw = meal["image"]?.ToString() ?? "";
+                    // Fix image URL - prepend Spoonacular CDN if it's a relative path
+                    var imageUrl = string.IsNullOrEmpty(imageRaw) ? "/images/default.jpg" : 
+                                   (imageRaw.StartsWith("http") ? imageRaw : $"https://spoonacular.com/recipeImages/{imageRaw}");
                     var sourceUrl = meal["sourceUrl"]?.ToString() ?? "#";
 
                     <div class="meal-section mb-5">
