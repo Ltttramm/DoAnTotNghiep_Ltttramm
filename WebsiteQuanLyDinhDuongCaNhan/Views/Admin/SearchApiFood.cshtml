@@ -1,0 +1,267 @@
+﻿@{
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+    ViewBag.Title = "API Food Discovery";
+}
+
+<style>
+    :root {
+        --primary-gold: #D4AF37;
+        --dark-slate: #212529;
+        --soft-gray: #f8f9fa;
+        --text-main: #1a202c;
+    }
+
+    /* Tùy chỉnh hệ thống lưới 5 cột cho màn hình lớn */
+    @@media (min-width: 1200px) {
+        .col-xl-2-4 {
+            flex: 0 0 auto;
+            width: 20%;
+        }
+    }
+
+    /* Search Header - Thu gọn lại */
+    .search-wrapper {
+        background: white;
+        border-radius: 20px;
+        padding: 25px;
+        box-shadow: 0 8px 25px rgba(0,0,0,0.04);
+        margin-bottom: 40px;
+    }
+
+    .search-input-group {
+        display: flex;
+        background: var(--soft-gray);
+        border-radius: 50px;
+        padding: 5px 5px 5px 20px;
+        transition: all 0.3s ease;
+        border: 2px solid transparent;
+    }
+
+    .search-input-group:focus-within {
+        background: white;
+        border-color: var(--dark-slate);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+    }
+
+    .search-input-group input {
+        border: none;
+        background: transparent;
+        outline: none;
+        width: 100%;
+        font-size: 1rem;
+    }
+
+    .btn-search-premium {
+        background: var(--dark-slate);
+        color: white;
+        border-radius: 50px;
+        padding: 10px 28px;
+        font-weight: 600;
+        border: none;
+        transition: all 0.3s;
+    }
+
+    /* Food Card - Thu nhỏ và tinh tế hơn */
+    .food-card {
+        border: none;
+        border-radius: 16px;
+        overflow: hidden;
+        transition: all 0.3s ease;
+        height: 100%;
+        background: white;
+        border: 1px solid #f0f0f0;
+    }
+
+    .food-card:hover {
+        transform: translateY(-6px);
+        box-shadow: 0 12px 24px rgba(0,0,0,0.08);
+    }
+
+    .card-img-container {
+        position: relative;
+        height: 150px; /* Thu nhỏ chiều cao ảnh */
+        overflow: hidden;
+    }
+
+    .card-img-top {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: transform 0.5s ease;
+    }
+
+    .card-body-content {
+        padding: 1rem; /* Giảm padding */
+        display: flex;
+        flex-direction: column;
+        flex-grow: 1;
+    }
+
+    .food-title {
+        font-size: 0.9rem; /* Chữ nhỏ lại */
+        font-weight: 700;
+        color: var(--text-main);
+        margin-bottom: 8px;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+        height: 2.5rem; /* Chiều cao cố định nhỏ hơn */
+        line-height: 1.3;
+    }
+
+    .calorie-pill {
+        display: inline-flex;
+        align-items: center;
+        background: #fff5f5;
+        color: #e53e3e;
+        padding: 4px 12px;
+        border-radius: 8px;
+        font-size: 0.75rem; /* Font nhỏ hơn */
+        font-weight: 700;
+        margin-bottom: 15px;
+        width: fit-content;
+    }
+
+    .btn-approve-modern {
+        background: var(--dark-slate);
+        color: white;
+        border: none;
+        border-radius: 10px; /* Bo góc nhỏ hơn */
+        padding: 8px;
+        font-size: 0.85rem;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+        transition: all 0.3s;
+    }
+
+    .btn-approve-modern:hover {
+        background: #198754;
+        color: white;
+    }
+
+    .empty-state {
+        opacity: 0.5;
+        padding: 80px 0;
+    }
+</style>
+
+<div class="container py-4">
+    <div class="text-center mb-4">
+        <h2 class="fw-bold mb-1">Recipe Discovery</h2>
+        <p class="text-muted small">Powered by Spoonacular API Integration</p>
+    </div>
+
+    <div class="row justify-content-center mb-4">
+        <div class="col-lg-7">
+            <div class="search-wrapper">
+                <div class="search-input-group">
+                    <i class="bi bi-search text-muted me-2"></i>
+                    <input type="text" id="txtSearch" placeholder="Search (e.g. Chicken, Salad, Pasta...)">
+                    <button class="btn-search-premium" onclick="searchFood()">Search</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="apiResults" class="row g-3">
+        <div class="col-12 text-center empty-state">
+            <i class="bi bi-cloud-sun fs-2 mb-2 d-block"></i>
+            <h5>Explore Recipes</h5>
+            <p class="small">Enter a keyword to start discovering nutrition data.</p>
+        </div>
+    </div>
+</div>
+
+@section scripts {
+    <script>
+        const apiKey = 'b8cb34723c7848ef8e44e80328654586';
+
+        function searchFood() {
+            let query = $('#txtSearch').val();
+            if (!query) return;
+
+            // Loading State
+            $('#apiResults').html(`
+                    <div class="col-12 text-center py-5">
+                        <div class="spinner-border text-dark spinner-border-sm" role="status"></div>
+                        <p class="mt-2 small text-muted">Fetching recipes...</p>
+                    </div>
+                `);
+
+            const url = `https://api.spoonacular.com/recipes/complexSearch?apiKey=${apiKey}&query=${query}&addRecipeNutrition=true&number=15`;
+
+            $.ajax({
+                url: url,
+                type: 'GET',
+                success: function (data) {
+                    if (!data.results || data.results.length === 0) {
+                        $('#apiResults').html('<div class="col-12 text-center py-5"><h6>No results found.</h6></div>');
+                        return;
+                    }
+
+                    let html = '';
+                    data.results.forEach(food => {
+                        let caloValue = 0;
+                        if (food.nutrition && food.nutrition.nutrients) {
+                            const caloObj = food.nutrition.nutrients.find(n => n.name === "Calories");
+                            if (caloObj) caloValue = caloObj.amount;
+                        }
+                        let finalCalo = Math.round(caloValue);
+                        let safeTitle = food.title.replace(/'/g, "\\'");
+
+                        html += `
+                                <div class="col-6 col-md-4 col-lg-3 col-xl-2-4">
+                                    <div class="card food-card shadow-sm">
+                                        <div class="card-img-container">
+                                            <img src="${food.image}" class="card-img-top" onerror="this.src='https://placehold.co/400x300?text=No+Image'">
+                                        </div>
+                                        <div class="card-body-content">
+                                            <div class="food-title" title="${food.title}">${food.title}</div>
+                                            <div class="calorie-pill">
+                                                <i class="bi bi-fire me-1"></i> ${finalCalo} kcal
+                                            </div>
+                                            <button class="btn-approve-modern mt-auto" onclick="approveApiFood('${food.id}', '${safeTitle}', ${finalCalo}, '${food.image}')">
+                                                <i class="bi bi-plus-circle"></i> Approve
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>`;
+                    });
+                    $('#apiResults').html(html);
+                },
+                error: function () {
+                    $('#apiResults').html('<div class="col-12 text-center py-5 text-danger small">Error connecting to API.</div>');
+                }
+            });
+        }
+
+        function approveApiFood(id, name, calo, img) {
+            let btn = event.currentTarget;
+            let originalHtml = btn.innerHTML;
+            btn.disabled = true;
+            btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span>';
+
+            $.post('/Admin/ApproveApiFood', {
+                apiId: id,
+                name: name,
+                calo: calo,
+                img: img,
+                category: "Spoonacular API"
+            }, function (res) {
+                if (res.success) {
+                    btn.innerHTML = '<i class="bi bi-check-lg"></i> Approved';
+                    btn.style.background = "#198754";
+                    setTimeout(() => { window.location.href = '/Admin/ManageFoods'; }, 600);
+                } else {
+                    alert(res.message);
+                    btn.disabled = false;
+                    btn.innerHTML = originalHtml;
+                }
+            });
+        }
+    </script>
+}

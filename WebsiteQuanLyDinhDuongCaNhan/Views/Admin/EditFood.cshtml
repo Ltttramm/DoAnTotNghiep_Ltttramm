@@ -1,0 +1,38 @@
+﻿@model WebsiteQuanLyDinhDuongCaNhan.Models.Food
+@{
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+    ViewBag.Title = "Edit Food";
+}
+
+<div class="container py-4">
+    <div class="card border-0 shadow-sm mx-auto" style="max-width: 600px;">
+        <div class="card-body p-4">
+            <h5 class="fw-bold mb-4">Edit Food Item</h5>
+
+            @using (Html.BeginForm())
+            {
+                @Html.HiddenFor(m => m.FoodID)
+
+                <div class="mb-3">
+                    <label class="form-label">Food Name</label>
+                    @Html.TextBoxFor(m => m.FoodName, new { @class = "form-control", placeholder = "Enter food name" })
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Calories (kcal)</label>
+                    @Html.TextBoxFor(m => m.Calories, new { @class = "form-control", type = "number", placeholder = "0" })
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Image URL</label>
+                    @Html.TextBoxFor(m => m.ImageURL, new { @class = "form-control", placeholder = "https://example.com/image.jpg" })
+                </div>
+
+                <div class="d-flex gap-2 pt-2">
+                    <button type="submit" class="btn btn-primary px-4">Save Changes</button>
+                    <a href="@Url.Action("ManageFoods")" class="btn btn-outline-secondary px-4">Cancel</a>
+                </div>
+            }
+        </div>
+    </div>
+</div>

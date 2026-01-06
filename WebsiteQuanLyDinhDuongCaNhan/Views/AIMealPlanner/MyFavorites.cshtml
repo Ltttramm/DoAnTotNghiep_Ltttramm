@@ -1,0 +1,695 @@
+﻿@*@model IEnumerable<WebsiteQuanLyDinhDuongCaNhan.Models.UserFavorite>
+
+    @{
+        ViewBag.Title = "Favorite Recipes";
+        Layout = "~/Views/Shared/_Layout.cshtml";
+    }
+
+    <style>
+        :root {
+            --main-gold: #C4A46B;
+            --soft-bg: #fdfbf7;
+            --dark-text: #2c2c2c;
+            --overlay-bg: rgba(0, 0, 0, 0.4);
+        }
+
+        body {
+            background-color: var(--soft-bg);
+        }
+
+        .favorites-wrapper {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 130px 20px 50px 20px;
+        }
+
+        .main-title {
+            font-size: 1.8rem;
+            letter-spacing: 3px;
+            color: var(--dark-text);
+            font-weight: 800;
+            text-align: center;
+            margin-bottom: 40px;
+            text-transform: uppercase;
+        }
+
+        .favorite-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 30px;
+            justify-items: center;
+        }
+
+        /* --- HIỆU ỨNG ZOOM CARD --- */
+        .recipe-mini-card {
+            position: relative;
+            width: 100%;
+            max-width: 240px;
+            border-radius: 20px;
+            overflow: hidden;
+            aspect-ratio: 1 / 1;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.05);
+            background: #fff;
+            transition: transform 0.4s cubic-bezier(0.165, 0.84, 0.44, 1), box-shadow 0.4s ease;
+            border: none;
+            cursor: pointer;
+        }
+
+            .recipe-mini-card:hover {
+                transform: scale(1.06);
+                box-shadow: 0 20px 40px rgba(196, 164, 107, 0.3);
+                z-index: 10;
+            }
+
+        .recipe-img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.6s ease;
+        }
+
+        .recipe-mini-card:hover .recipe-img {
+            transform: scale(1.1);
+        }
+
+        .recipe-badge {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            padding: 15px 15px 30px 15px;
+            background: linear-gradient(to bottom, rgba(0,0,0,0.6) 0%, transparent 100%);
+            color: white;
+            font-size: 0.85rem;
+            font-weight: 600;
+            z-index: 2;
+            transition: opacity 0.3s ease;
+        }
+
+        .recipe-mini-card:hover .recipe-badge {
+            opacity: 0;
+        }
+
+        .recipe-overlay {
+            position: absolute;
+            inset: 0;
+            background: var(--overlay-bg);
+            backdrop-filter: blur(2px);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            z-index: 3;
+        }
+
+        .recipe-mini-card:hover .recipe-overlay {
+            opacity: 1;
+        }
+
+        .btn-receipt-custom {
+            background-color: var(--main-gold);
+            color: white !important;
+            border-radius: 50px;
+            padding: 8px 22px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+        }
+
+        .btn-delete-small {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            background: white;
+            color: #ff4757;
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 11;
+            border: none;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            transition: 0.2s;
+        }
+
+            .btn-delete-small:hover {
+                transform: scale(1.15);
+                background: #fff0f0;
+            }
+
+        /* --- MESSAGE BOX CUSTOM (GỌN NHẸ) --- */
+        .custom-swal-popup {
+            width: 320px !important;
+            padding: 1.5rem !important;
+            border-radius: 25px !important;
+        }
+
+        .custom-swal-title {
+            font-size: 1.2rem !important;
+            color: var(--dark-text) !important;
+            padding-top: 0.5em !important;
+        }
+
+        .custom-swal-confirm {
+            background-color: var(--main-gold) !important;
+            border-radius: 50px !important;
+            padding: 8px 25px !important;
+            margin: 5px !important;
+            font-size: 0.85rem !important;
+            order: 1; /* Đảm bảo nút xác nhận bên trái */
+        }
+
+        .custom-swal-cancel {
+            color: #999 !important;
+            font-size: 0.85rem !important;
+            font-weight: 600 !important;
+            margin: 5px !important;
+            order: 2; /* Đảm bảo nút hủy bên phải */
+        }
+
+        .success-swal-popup {
+            width: 250px !important;
+            border-radius: 15px !important;
+            padding: 1rem !important;
+        }
+    </style>
+
+    <div class="favorites-wrapper">
+        <h1 class="main-title">Favorite Recipes</h1>
+
+        <div class="favorite-grid" id="favorite-list">
+            @foreach (var item in Model)
+            {
+                <div class="recipe-mini-card" id="fav-item-@item.FavoriteID">
+                    <div class="recipe-badge">@item.RecipeTitle</div>
+                    <button onclick="confirmDelete(@item.FavoriteID)" class="btn-delete-small">
+                        <i class="fas fa-times"></i>
+                    </button>
+                    <img src="@item.RecipeImage" class="recipe-img">
+                    <div class="recipe-overlay">
+                        <h5 class="text-white text-center mb-3" style="font-size:0.9rem; font-weight:700;">@item.RecipeTitle</h5>
+                        <a href="@Url.Action("RecipeDetail", "AIMealPlanner", new { recipeId = item.ExternalRecipeID })" class="btn-receipt-custom">Receipt</a>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+
+    @section scripts {
+        <script>
+            function confirmDelete(favId) {
+                Swal.fire({
+                    title: 'Xóa món ăn?',
+                    text: "Món này sẽ rời khỏi danh sách yêu thích.",
+                    icon: 'question',
+                    iconColor: 'var(--main-gold)',
+                    showCancelButton: true,
+                    confirmButtonText: 'Xác nhận',
+                    cancelButtonText: 'Để sau',
+                    // reverseButtons: false là mặc định, xác nhận bên trái, hủy bên phải
+                    reverseButtons: false,
+                    background: '#fff',
+                    customClass: {
+                        popup: 'custom-swal-popup',
+                        title: 'custom-swal-title',
+                        confirmButton: 'custom-swal-confirm',
+                        cancelButton: 'custom-swal-cancel'
+                    },
+                    buttonsStyling: false
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        $.post("/AIMealPlanner/RemoveFavorite", { id: favId }, function (data) {
+                            if (data.success) {
+                                $("#fav-item-" + favId).fadeOut(400, function () { $(this).remove(); });
+
+                                // Thông báo thành công đơn giản nằm giữa màn hình
+                                Swal.fire({
+                                    title: 'Đã xóa thành công',
+                                    showConfirmButton: false,
+                                    timer: 1200,
+                                    position: 'center',
+                                    icon: undefined, // Không hiện icon
+                                    customClass: {
+                                        popup: 'success-swal-popup',
+                                        title: 'custom-swal-title'
+                                    }
+                                });
+                            }
+                        });
+                    }
+                })
+            }
+        </script>
+    }*@
+@model IEnumerable<WebsiteQuanLyDinhDuongCaNhan.Models.UserFavorite>
+
+@{
+    ViewBag.Title = "My Kitchen Box";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@800;900&family=Inter:wght@400;600&display=swap" rel="stylesheet">
+
+<style>
+    :root {
+        --main-gold: #C4A46B;
+        --soft-bg: #fdfbf7;
+        --dark-text: #2c2c2c;
+        --overlay-bg: rgba(0, 0, 0, 0.7);
+        --accent-red: #ff4757;
+        --success-green: #2ecc71;
+    }
+
+    body {
+        background-color: var(--soft-bg);
+    }
+
+    /* CONTAINER CHÍNH - QUAN TRỌNG: Bao phủ toàn bộ nội dung */
+    .favorites-container {
+        max-width: 1200px;
+        margin: 60px;
+        padding: 60px 20px;
+    }
+
+        /* --- TIÊU ĐỀ ĐỒNG BỘ 7-DAY MEAL PLAN --- */
+        .favorites-container h1 {
+            font-family: 'Montserrat', sans-serif !important;
+            font-weight: 900 !important;
+            font-size: 3.2rem !important;
+            color: var(--dark-text);
+            text-transform: uppercase;
+            letter-spacing: 5px; /* Độ dãn chữ đặc trưng của Meal Plan */
+            margin-bottom: 8px !important;
+            text-align: center;
+            line-height: 1.1;
+        }
+
+        .favorites-container p.slogan {
+            font-family: 'Inter', sans-serif;
+            font-size: 1.1rem;
+            letter-spacing: 1px;
+            font-weight: 400;
+            color: #888 !important;
+            text-align: center;
+            margin-bottom: 45px !important;
+        }
+
+    /* --- THỐNG KÊ NHANH --- */
+    .stats-row {
+        display: flex;
+        justify-content: center;
+        gap: 30px;
+        margin-bottom: 40px;
+    }
+
+    .stat-item {
+        background: linear-gradient(145deg, #ffffff, #fdfbf7);
+        padding: 20px 45px;
+        border-radius: 25px;
+        box-shadow: 10px 10px 20px #e0ddd8, -5px -5px 15px #ffffff;
+        text-align: center;
+        border: 1px solid rgba(196, 164, 107, 0.15);
+        transition: transform 0.3s ease;
+        min-width: 180px;
+    }
+
+        .stat-item:hover {
+            transform: translateY(-5px);
+            border-color: var(--main-gold);
+        }
+
+    .stat-value {
+        display: block;
+        font-size: 2.2rem;
+        font-weight: 900;
+        color: var(--main-gold);
+        line-height: 1;
+        margin-bottom: 5px;
+        font-family: 'Montserrat', sans-serif;
+    }
+
+    .stat-label {
+        font-size: 0.75rem;
+        color: #a0a0a0;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 2px;
+    }
+
+    /* --- THANH FILTER --- */
+    .filter-bar {
+        display: flex;
+        justify-content: center;
+        gap: 12px;
+        margin-bottom: 40px;
+        flex-wrap: wrap;
+    }
+
+    .filter-btn {
+        padding: 10px 25px;
+        border-radius: 50px;
+        border: 1.5px solid var(--main-gold);
+        background: white;
+        color: var(--main-gold);
+        font-weight: 700;
+        font-size: 0.85rem;
+        transition: all 0.3s ease;
+        cursor: pointer;
+    }
+
+        .filter-btn.active, .filter-btn:hover {
+            background: var(--main-gold);
+            color: white;
+            box-shadow: 0 4px 12px rgba(196, 164, 107, 0.3);
+        }
+
+    .btn-dice {
+        border-color: var(--success-green);
+        color: var(--success-green);
+    }
+
+        .btn-dice:hover {
+            background: var(--success-green);
+            border-color: var(--success-green);
+        }
+
+    /* --- GRID & CARD --- */
+    .favorite-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+        gap: 30px;
+    }
+
+    .recipe-card {
+        position: relative;
+        border-radius: 24px;
+        overflow: hidden;
+        aspect-ratio: 1 / 1.15;
+        background: white;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+        transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+
+        .recipe-card:hover {
+            transform: translateY(-12px);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.15);
+        }
+
+    .random-highlight {
+        outline: 5px solid var(--success-green) !important;
+        outline-offset: 5px;
+        z-index: 100;
+    }
+
+    .recipe-img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: 0.8s;
+    }
+
+    .recipe-card:hover .recipe-img {
+        transform: scale(1.1);
+    }
+
+    .cat-badge {
+        position: absolute;
+        top: 15px;
+        left: 15px;
+        background: var(--main-gold);
+        color: white;
+        padding: 4px 12px;
+        border-radius: 50px;
+        font-size: 0.65rem;
+        font-weight: 800;
+        text-transform: uppercase;
+        z-index: 10;
+    }
+
+    .card-overlay {
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(to top, var(--overlay-bg) 20%, transparent 75%);
+        display: flex;
+        flex-direction: column;
+        justify-content: flex-end;
+        padding: 20px;
+    }
+
+    .recipe-title {
+        color: white;
+        font-weight: 800;
+        font-size: 1.2rem;
+        margin-bottom: 5px;
+        display: -webkit-box;
+        -webkit-line-clamp: 1;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
+
+    .recipe-note-preview {
+        color: rgba(255,255,255,0.85);
+        font-size: 0.8rem;
+        margin-bottom: 15px;
+        font-style: italic;
+    }
+
+    .action-row {
+        display: flex;
+        gap: 10px;
+    }
+
+    .btn-main {
+        background: white;
+        color: var(--dark-text) !important;
+        padding: 8px 18px;
+        border-radius: 50px;
+        font-size: 0.75rem;
+        font-weight: 800;
+        text-decoration: none;
+        transition: 0.3s;
+    }
+
+        .btn-main:hover {
+            background: var(--main-gold);
+            color: white !important;
+        }
+
+    .btn-note-edit {
+        background: rgba(255,255,255,0.25);
+        color: white;
+        width: 35px;
+        height: 35px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border: none;
+    }
+
+    .btn-remove-fav {
+        position: absolute;
+        top: 15px;
+        right: 15px;
+        width: 35px;
+        height: 35px;
+        background: white;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--accent-red);
+        border: none;
+        z-index: 11;
+        transition: 0.3s;
+    }
+
+        .btn-remove-fav:hover {
+            transform: rotate(90deg);
+        }
+
+    /* SWEETALERT CUSTOM */
+    .swal2-popup {
+        border-radius: 30px !important;
+        background: #fdfbf7 !important;
+    }
+
+    .swal-winner-title {
+        font-size: 1.6rem;
+        font-weight: 900;
+        color: var(--main-gold);
+        text-transform: uppercase;
+    }
+</style>
+
+<div class="favorites-container">
+    <div class="header-content text-center mb-5">
+        <h1 class="fw-bold text-gold mb-2 main-title" style="font-family: 'Montserrat', sans-serif !important; font-weight: 900 !important; letter-spacing: 5px; color: #C4A46B !important; text-transform: uppercase;">
+            MY KITCHEN BOX
+        </h1>
+        <p class="slogan-text italic" style="color: #8a6d3b; font-size: 1.25rem;">
+            "Preserve the flavor of your own favorite dish!"
+        </p>
+
+        <div class="stats-row">
+            <div class="stat-item">
+                <span class="stat-value">@Model.Count()</span>
+                <span class="stat-label">Món ăn</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-value">@Model.Select(m => m.Category).Distinct().Count()</span>
+                <span class="stat-label">Danh mục</span>
+            </div>
+        </div>
+
+        <div class="filter-bar">
+            <button class="filter-btn active" onclick="filterList('all', this)">All Collections</button>
+            <button class="filter-btn" onclick="filterList('healthy', this)">#Healthy</button>
+            <button class="filter-btn" onclick="filterList('quick', this)">#QuickMeal</button>
+            <button class="filter-btn" onclick="filterList('dinner', this)">#Dinner</button>
+
+            <button class="filter-btn btn-dice" onclick="pickRandomDish()">
+                <i class="fas fa-dice"></i> What to eat today?
+            </button>
+        </div>
+
+        <div class="favorite-grid" id="favorite-list">
+            @if (!Model.Any())
+            {
+                <div style="grid-column: 1/-1; text-align: center; padding: 50px;">
+                    <i class="fas fa-utensils fa-3x mb-3" style="color: #ddd;"></i>
+                    <h4 style="font-weight:800">Your cabinet is empty</h4>
+                    <a href="/" class="filter-btn" style="display:inline-block; text-decoration:none; margin-top:10px;">Khám phá ngay</a>
+                </div>
+            }
+
+            @foreach (var item in Model)
+            {
+                var rawCategory = (item.Category ?? "other").ToLower().Trim();
+
+                <div class="recipe-card filter-item @rawCategory" id="fav-item-@item.FavoriteID">
+                    <div class="cat-badge">#@(item.Category ?? "Dish")</div>
+
+                    <button onclick="confirmDelete(@item.FavoriteID)" class="btn-remove-fav shadow-sm">
+                        <i class="fas fa-times"></i>
+                    </button>
+
+                    <img src="@item.RecipeImage" class="recipe-img" onerror="this.src='/images/default-meal.jpg'">
+
+                    <div class="card-overlay">
+                        <h3 class="recipe-title">@item.RecipeTitle</h3>
+                        <p class="recipe-note-preview" id="note-text-@item.FavoriteID">
+                            <i class="fas fa-quote-left me-1" style="font-size: 0.5rem; vertical-align: middle;"></i>
+                            <span>@(string.IsNullOrEmpty(item.Note) ? "Notes..." : item.Note)</span>
+                        </p>
+
+                        <div class="action-row">
+                            <a href="@Url.Action("RecipeDetail", "AIMealPlanner", new { recipeId = item.ExternalRecipeID })" class="btn-main">
+                                View Recipe <i class="fas fa-arrow-right ms-1"></i>
+                            </a>
+                            <button onclick="editNote(@item.FavoriteID)" class="btn-note-edit">
+                                <i class="fas fa-pen"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+    @section scripts {
+        <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.5.1/dist/confetti.browser.min.js"></script>
+
+        <script>
+            function filterList(category, btn) {
+                $('.filter-btn').removeClass('active');
+                $(btn).addClass('active');
+                if (category === 'all') {
+                    $('.filter-item').fadeIn(400);
+                } else {
+                    $('.filter-item').hide();
+                    $(`.filter-item.${category}`).fadeIn(400);
+                }
+            }
+
+            function pickRandomDish() {
+                const visibleCards = $('.filter-item:visible');
+                if (visibleCards.length === 0) return;
+
+                let counter = 0;
+                let maxCycles = 15;
+
+                const interval = setInterval(() => {
+                    visibleCards.removeClass('random-highlight');
+                    const randomIdx = Math.floor(Math.random() * visibleCards.length);
+                    $(visibleCards[randomIdx]).addClass('random-highlight');
+                    counter++;
+                    if (counter >= maxCycles) {
+                        clearInterval(interval);
+                        confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 }, colors: ['#C4A46B', '#ffffff'] });
+
+                        const winner = $('.random-highlight');
+                        const title = winner.find('.recipe-title').text();
+
+                        Swal.fire({
+                            title: "LET'S EAT THIS DISH!",
+                            html: `<div class="swal-winner-title">${title}</div>`,
+                            imageUrl: winner.find('.recipe-img').attr('src'),
+                            imageWidth: 350,
+                            confirmButtonText: 'GO TO RECIPE',
+                            confirmButtonColor: '#C4A46B',
+                            showCancelButton: true,
+                            cancelButtonText: 'TRY AGAIN',
+                            background: '#fdfbf7',
+                            customClass: { popup: 'swal2-popup' }
+                        }).then((result) => {
+                            if (result.isConfirmed) winner.find('.btn-main')[0].click();
+                            else winner.removeClass('random-highlight');
+                        });
+                    }
+                }, 100);
+            }
+
+            function editNote(favId) {
+                const currentNote = $(`#note-text-${favId} span`).text().trim();
+                Swal.fire({
+                    title: 'Personal notes',
+                    input: 'textarea',
+                    inputValue: (currentNote === "Notes...") ? "" : currentNote,
+                    confirmButtonText: 'Save Note',
+                    showCancelButton: true
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        $.post("/AIMealPlanner/UpdateFavoriteNote", { id: favId, note: result.value }, function (data) {
+                            if (data.success) {
+                                $(`#note-text-${favId} span`).text(result.value.trim() ? result.value : "Notes...");
+                                location.reload();
+                            }
+                        });
+                    }
+                });
+            }
+
+            function confirmDelete(favId) {
+                Swal.fire({
+                    title: 'Remove this dish?',
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#ff4757',
+                    confirmButtonText: 'Yes, remove it!'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        $.post("/AIMealPlanner/RemoveFavorite", { id: favId }, function (data) {
+                            if (data.success) location.reload();
+                        });
+                    }
+                });
+            }
+        </script>
+    }

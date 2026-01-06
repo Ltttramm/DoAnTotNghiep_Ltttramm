@@ -1,0 +1,92 @@
+﻿@{
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+    ViewBag.Title = "Management page";
+}
+
+<div class="row g-4 mb-4">
+    <div class="col-md-3">
+        <div class="card stat-card shadow-sm bg-white p-3 border-0">
+            <div class="d-flex align-items-center">
+                <div class="p-3 bg-primary bg-opacity-10 rounded-3 me-3 text-primary">
+                    <i class="bi bi-people fs-3"></i>
+                </div>
+                <div>
+                    <h6 class="text-muted mb-1">User</h6>
+                    <h4 class="fw-bold mb-0">@ViewBag.UserCount</h4>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card shadow-sm border-0 p-4">
+    <h5 class="fw-bold mb-4">Newest registered users</h5>
+    <div class="table-responsive">
+        <table class="table align-middle border-top">
+            <thead class="text-muted small text-uppercase">
+                <tr>
+                    <th>UserName</th>
+                    <th>Email</th>
+                    <th>Date of participation</th>
+                    <th>Status</th>
+                    <th class="text-center">Operation</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var user in Model)
+                {
+                    <tr id="user-row-@user.UserID">
+                        <td><div class="fw-bold">@(user.FullName ?? "Chưa đặt tên")</div></td>
+                        <td>@user.Email</td>
+                        <td>@user.CreatedAt.ToString("dd/MM/yyyy")</td>
+                        <td><span class="badge bg-success bg-opacity-10 text-success">Hoạt động</span></td>
+                        <td class="text-center">
+                            <a href="@Url.Action("EditUser", "Admin", new { id = user.UserID })" class="btn btn-sm btn-light text-primary me-1">
+                                <i class="bi bi-pencil"></i>
+                            </a>
+                            <button class="btn btn-sm btn-light text-danger" onclick="deleteUser(@user.UserID, '@user.FullName')">
+                                <i class="bi bi-trash"></i>
+                            </button>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+@section scripts {
+    <script>
+        function deleteUser(id, name) {
+            // Sử dụng SweetAlert2 (đã có trong layout của bạn) để hỏi xác nhận
+            Swal.fire({
+                title: 'Do you want to delete?',
+                text: "Are you sure you want to delete the user: " + name + "?",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#c5a059',
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'OK',
+                cancelButtonText: 'Cancel'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    // Gửi yêu cầu xóa bằng Ajax
+                    $.ajax({
+                        url: '/Admin/DeleteUser',
+                        type: 'POST',
+                        data: { id: id },
+                        success: function (res) {
+                            if (res.success) {
+                                Swal.fire('Success!', 'The user has been deleted.', 'success');
+                                // Hiệu ứng biến mất dòng mà không load lại trang
+                                $("#user-row-" + id).fadeOut(400);
+                            } else {
+                                Swal.fire('Lỗi!', res.message, 'error');
+                            }
+                        }
+                    });
+                }
+            });
+        }
+    </script>
+}
