@@ -6,10 +6,42 @@
     <title>@ViewData["Title"] - NutritionHub</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/js/all.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <link rel="stylesheet" href="~/CSS/style.css" />
+    <style>
+        /* Sửa lỗi xuống hàng và kích thước menu */
+        #menu {
+            min-width: 250px;
+            white-space: nowrap;
+        }
+
+        .gold-icon {
+            color: #C4A46B !important;
+            width: 24px;
+            text-align: center;
+        }
+
+        .menu-item:hover {
+            background-color: #C4A46B;
+            color: white !important;
+        }
+
+            .menu-item:hover .gold-icon {
+                color: white !important;
+            }
+
+        /* Xử lý khoảng trống phía trên */
+        header {
+            top: 0 !important;
+        }
+
+        main {
+            padding-top: 0px; /* Đảm bảo nội dung không bị header đè lên */
+        }
+    </style>
 </head>
-<body class="bg-[#F5F5DC] text-[#5C504D] min-h-screen">
-    <!-- Header -->
+<body class="bg-[#F5F5DC] text-[#5C504D] min-h-screen m-0 p-0">
     @if (ViewData["HideHeader"] == null || !(bool)ViewData["HideHeader"])
     {
         <header class="fixed top-0 left-0 w-full flex justify-between items-center px-8 py-3 border-b border-gray-400 bg-[#EDE9DD] shadow-md z-50">
@@ -17,84 +49,71 @@
             <nav>
                 <ul class="flex space-x-4">
                     <li><a href="/" class="hover:text-[#B8860B]">Home</a></li>
-                    <li><a href="/about" class="hover:text-[#B8860B]">About</a></li>
+                    <li><a href="/Home/About" class="hover:text-[#B8860B]">About</a></li>
                     <li><a href="/nutrition" class="hover:text-[#B8860B]">Nutrition</a></li>
                     <li><a href="/contact" class="hover:text-[#B8860B]">Contact</a></li>
                 </ul>
             </nav>
 
-            <div class="Sign-btn flex space-x-1">
+            <div class="Sign-btn flex items-center space-x-3">
                 @if (User.Identity.IsAuthenticated)
                 {
                     <div class="relative">
-                        <button onclick="toggleMenu()" class="fixed-button flex items-center bg-[#C4A46B] px-6 py-3 rounded-full text-white hover:bg-[#A89F98] justify-between">
+                        <button onclick="toggleMenu()" class="flex items-center bg-[#C4A46B] px-6 py-2.5 rounded-full text-white hover:bg-[#A89F98] transition-all">
                             <i class="fas fa-user-circle text-xl mr-2"></i>
-                            <span class="flex-1 text-left">@User.Identity.Name</span>
-                            <span class="ml-2">▼</span>
+                            <span class="mr-2 font-medium">@User.Identity.Name</span>
+                            <span class="text-[10px]">▼</span>
                         </button>
 
-                        <div id="menu" class="absolute right-0 mt-2 w-52 bg-white shadow-lg rounded-lg hidden">
-                            <a href="@Url.Action("Profile", "Auth")" class="flex items-center px-4 py-2 text-gray-700 hover:bg-gray-200">
-                                <i class="fas fa-user-circle mr-2"></i> Hồ sơ cá nhân
+                        <div id="menu" class="absolute right-0 mt-2 bg-white shadow-xl rounded-xl hidden border border-gray-100 z-50 overflow-hidden">
+                            <a href="@Url.Action("Profile", "Auth")" class="menu-item flex items-center px-5 py-3 text-gray-700 transition-all">
+                                <i class="fas fa-user-circle mr-3 gold-icon"></i>
+                                <span class="font-medium text-sm">Hồ sơ cá nhân</span>
                             </a>
-                            <a href="@Url.Action("MealPlan", "AIMealPlanner")" class="flex items-center px-4 py-2 text-gray-700 hover:bg-gray-200">
-                                <i class="fas fa-utensils mr-2"></i> Kế hoạch ăn uống
+                            <a href="@Url.Action("MyFavorites", "AIMealPlanner")" class="menu-item flex items-center px-5 py-3 text-gray-700 transition-all">
+                                <i class="fas fa-heart mr-3 gold-icon"></i>
+                                <span class="font-medium text-sm">Món ăn yêu thích</span>
                             </a>
-                            <a href="@Url.Action("Analyze", "Nutrition")" class="flex items-center px-4 py-2 text-gray-700 hover:bg-gray-200">
-                                <i class="fas fa-chart-pie mr-2"></i> Phân tích dinh dưỡng
+                            <a href="@Url.Action("MealPlan", "AIMealPlanner")" class="menu-item flex items-center px-5 py-3 text-gray-700 transition-all">
+                                <i class="fas fa-utensils mr-3 gold-icon"></i>
+                                <span class="font-medium text-sm">Kế hoạch ăn uống</span>
                             </a>
-                            <a href="@Url.Action("FoodRecognition", "FoodRecognition")" class="flex items-center px-4 py-2 text-gray-700 hover:bg-gray-200">
-                                <i class="fas fa-weight mr-2"></i> Nhận diện món ăn
-                            </a>
-                            <a href="/nutrition-assistant" class="flex items-center px-4 py-2 text-gray-700 hover:bg-gray-200">
-                                <i class="fas fa-robot mr-2"></i> Trợ lý dinh dưỡng
-                            </a>
-                            <a href="/community" class="flex items-center px-4 py-2 text-gray-700 hover:bg-gray-200">
-                                <i class="fas fa-users mr-2"></i> Cộng đồng
-                            </a>
-                            <a href="@Url.Action("Logout", "Auth")" class="flex items-center px-4 py-2 text-red-500 hover:bg-gray-200">
-                                <i class="fas fa-sign-out-alt mr-2"></i> Logout
-                            </a>
+
+                            <div class="border-t border-gray-100">
+                                <a href="@Url.Action("Logout", "Auth")" class="flex items-center justify-center py-3 text-[#FF4D4D] hover:bg-red-50 transition-all font-bold uppercase text-[11px] tracking-widest">
+                                    <i class="fas fa-sign-out-alt mr-2"></i> LOGOUT
+                                </a>
+                            </div>
                         </div>
                     </div>
                 }
                 else
                 {
-                    <a href="@Url.Action("Register", "Auth")" class="bg-[#C4A46B] px-5 py-2 rounded-full text-white hover:bg-[#A89F98]">Sign Up</a>
-                    <a href="@Url.Action("Login", "Auth")" class="bg-[#C4A46B] px-5 py-2 rounded-full text-white hover:bg-[#A89F98]">Sign In</a>
+                    <a href="@Url.Action("Login", "Auth")" class="text-[#C4A46B] font-bold hover:text-[#B8860B] px-3">Sign In</a>
+                    <a href="@Url.Action("Register", "Auth")" class="bg-[#C4A46B] px-6 py-2 rounded-full text-white font-bold hover:bg-[#A89F98] transition-all shadow-sm">Sign Up</a>
                 }
             </div>
         </header>
     }
 
-    <!-- Main Content -->
     <main>
         @RenderBody()
     </main>
 
-    <!-- Footer -->
-    @if (ViewData["HideFooter"] == null || !(bool)ViewData["HideFooter"])
-    {
-        <footer class="text-center py-6 text-gray-700 text-sm bg-[#EDE9DD]">
-            
-        </footer>
-    }
+    <script>
+        function toggleMenu() {
+            var menu = document.getElementById("menu");
+            if (menu) menu.classList.toggle("hidden");
+        }
 
+        document.addEventListener("click", function (event) {
+            var menu = document.getElementById("menu");
+            var button = document.querySelector(".Sign-btn button");
+            if (menu && button && !menu.contains(event.target) && !button.contains(event.target)) {
+                menu.classList.add("hidden");
+            }
+        });
+    </script>
+    @RenderSection("scripts", required: false)
 </body>
 </html>
-<script>
-    function toggleMenu() {
-        var menu = document.getElementById("menu");
-        menu.classList.toggle("hidden");
-    }
-
-    // Đóng menu nếu click ra ngoài
-    document.addEventListener("click", function (event) {
-        var menu = document.getElementById("menu");
-        var button = document.querySelector(".Sign-btn button");
-
-        if (!menu.contains(event.target) && !button.contains(event.target)) {
-            menu.classList.add("hidden");
-        }
-    });
-</script>

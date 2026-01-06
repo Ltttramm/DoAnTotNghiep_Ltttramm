@@ -1,5 +1,5 @@
 ﻿@{
-    ViewBag.Title = "Đăng ký tài khoản";
+    ViewBag.Title = "Create an Account";
     Layout = "~/Views/Shared/_Layout.cshtml";
     ViewData["HideHeader"] = true;
     ViewData["HideFooter"] = true;
@@ -7,50 +7,50 @@
 
 <div class="flex justify-center items-center min-h-screen bg-[#F5F5DC]">
     <div class="bg-white p-8 rounded-lg shadow-md w-96">
-        <h2 class="text-2xl font-bold text-center text-[#C4A46B] mb-6">Đăng ký</h2>
+        <h2 class="text-2xl font-bold text-center text-[#C4A46B] mb-6">Sign Up</h2>
 
         @if (!ViewData.ModelState.IsValid)
         {
-            <div class="text-red-500 text-sm">
+            <div class="text-red-500 text-sm mb-4">
                 @Html.ValidationSummary(false, "", new { @class = "text-red-500" })
             </div>
         }
 
         @if (TempData["SuccessMessage"] != null)
         {
-            <div class="text-green-500 text-sm">
+            <div class="text-green-500 text-sm mb-4">
                 @TempData["SuccessMessage"]
             </div>
         }
 
         <form method="post" class="space-y-4">
             <div>
-                <label class="block text-sm font-medium text-gray-700">Họ và tên</label>
-                <input name="FullName" required class="mt-1 block w-full px-4 py-2 border rounded-md focus:ring-[#C4A46B] focus:border-[#C4A46B]">
+                <label class="block text-sm font-medium text-gray-700">Full Name</label>
+                <input name="FullName" placeholder="Enter your full name" required class="mt-1 block w-full px-4 py-2 border rounded-md focus:ring-[#C4A46B] focus:border-[#C4A46B]">
             </div>
 
             <div>
-                <label class="block text-sm font-medium text-gray-700">Email</label>
-                <input name="Email" type="email" required class="mt-1 block w-full px-4 py-2 border rounded-md focus:ring-[#C4A46B] focus:border-[#C4A46B]">
+                <label class="block text-sm font-medium text-gray-700">Email Address</label>
+                <input name="Email" type="email" placeholder="example@mail.com" required class="mt-1 block w-full px-4 py-2 border rounded-md focus:ring-[#C4A46B] focus:border-[#C4A46B]">
             </div>
 
             <div>
-                <label class="block text-sm font-medium text-gray-700">Mật khẩu</label>
-                <input name="Password" type="password" required class="mt-1 block w-full px-4 py-2 border rounded-md focus:ring-[#C4A46B] focus:border-[#C4A46B]">
+                <label class="block text-sm font-medium text-gray-700">Password</label>
+                <input name="Password" type="password" placeholder="••••••••" required class="mt-1 block w-full px-4 py-2 border rounded-md focus:ring-[#C4A46B] focus:border-[#C4A46B]">
             </div>
 
             <div>
-                <label class="block text-sm font-medium text-gray-700">Xác nhận mật khẩu</label>
-                <input name="ConfirmPassword" type="password" required class="mt-1 block w-full px-4 py-2 border rounded-md focus:ring-[#C4A46B] focus:border-[#C4A46B]">
+                <label class="block text-sm font-medium text-gray-700">Confirm Password</label>
+                <input name="ConfirmPassword" type="password" placeholder="••••••••" required class="mt-1 block w-full px-4 py-2 border rounded-md focus:ring-[#C4A46B] focus:border-[#C4A46B]">
             </div>
 
-            <button type="submit" class="w-full bg-[#C4A46B] text-white py-2 rounded-md hover:bg-[#A89F98] transition">
-                Đăng ký
+            <button type="submit" class="w-full bg-[#C4A46B] text-white py-2 rounded-md hover:bg-[#A89F98] transition font-semibold">
+                Register
             </button>
         </form>
 
         <div class="text-center mt-4 text-sm text-gray-600">
-            Đã có tài khoản? <a href="@Url.Action("Login", "Auth")" class="text-[#C4A46B] font-medium hover:underline">Đăng nhập</a>
+            Already have an account? <a href="@Url.Action("Login", "Auth")" class="text-[#C4A46B] font-medium hover:underline">Login here</a>
         </div>
     </div>
 </div>

@@ -2,7 +2,7 @@
 using Microsoft.Owin.Security.Cookies;
 using Microsoft.Owin.Security.Google;
 using Owin;
-using System;
+using WebsiteQuanLyDinhDuongCaNhan.Models;
 
 [assembly: OwinStartup(typeof(WebsiteQuanLyDinhDuongCaNhan.Startup))]
 
@@ -12,26 +12,30 @@ namespace WebsiteQuanLyDinhDuongCaNhan
     {
         public void Configuration(IAppBuilder app)
         {
-            // Cookie Authentication
+            // Cấu hình Cookie Authentication
             app.UseCookieAuthentication(new CookieAuthenticationOptions
             {
                 AuthenticationType = CookieAuthenticationDefaults.AuthenticationType,
                 LoginPath = new PathString("/Auth/Login"),
-                ExpireTimeSpan = TimeSpan.FromMinutes(60),
+                ExpireTimeSpan = System.TimeSpan.FromMinutes(60),
                 SlidingExpiration = true
             });
 
-            // Google Authentication (SAFE)
+            // Cấu hình Google Authentication
             var googleOptions = new GoogleOAuth2AuthenticationOptions
             {
-                ClientId = Environment.GetEnvironmentVariable("GOOGLE_CLIENT_ID"),
-                ClientSecret = Environment.GetEnvironmentVariable("GOOGLE_CLIENT_SECRET"),
+                ClientId = "600351066363-6c5fadje9iabfvaf8p6s1fn89kltfgov.apps.googleusercontent.com",
+                ClientSecret = "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",
                 CallbackPath = new PathString("/Auth/GoogleResponse"),
                 AuthenticationMode = Microsoft.Owin.Security.AuthenticationMode.Active,
                 SignInAsAuthenticationType = CookieAuthenticationDefaults.AuthenticationType
             };
 
             app.UseGoogleAuthentication(googleOptions);
+
+
+
         }
+
     }
 }

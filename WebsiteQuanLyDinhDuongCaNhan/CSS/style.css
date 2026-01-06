@@ -373,8 +373,7 @@ div {
 }
 
 .content {
-    flex: 1;
-    max-width: 600px;
+    margin-top:80px;
 }
 
     .content h2 {
@@ -402,4 +401,408 @@ div {
         border-radius: 10px;
     }
 
+/* ===== TRANG ABOUT ===== */
+.about-page {
+    margin-top: 80px; /* QUAN TRỌNG: tránh bị header che */
+}
 
+/* ===== HERO ===== */
+.about-hero {
+    position: relative;
+    height: 320px;
+    background: url("../Image/eatclean2.jpg") center/cover no-repeat;
+}
+
+    .about-hero .overlay {
+        position: absolute;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.55);
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        text-align: center;
+        color: #fff;
+        padding: 20px;
+    }
+
+    .about-hero h1 {
+        font-size: 42px;
+        margin-bottom: 10px;
+    }
+
+    .about-hero p {
+        font-size: 18px;
+        opacity: 0.9;
+    }
+
+/* ===== SECTION CHUNG ===== */
+.about-section,
+.about-mission,
+.about-benefits,
+.about-cta {
+    max-width: 1200px;
+    margin: 80px auto;
+    padding: 0 20px;
+}
+
+/* ===== GIỚI THIỆU ===== */
+.about-section {
+    display: flex;
+    align-items: center;
+    gap: 50px;
+}
+
+    .about-section .content {
+        flex: 1;
+    }
+
+    .about-section h2 {
+        font-size: 32px;
+        margin-bottom: 15px;
+    }
+
+    .about-section p {
+        font-size: 17px;
+        color: #555;
+    }
+
+    .about-section .image {
+        flex: 1;
+        text-align: center;
+    }
+
+    .about-section img {
+        max-width: 100%;
+        border-radius: 16px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+    }
+
+/* ===== SỨ MỆNH ===== */
+.about-mission {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 30px;
+    text-align: center;
+}
+
+.mission-item {
+    background: #f8f8f8;
+    padding: 30px;
+    border-radius: 16px;
+    transition: transform 0.3s ease;
+}
+
+    .mission-item:hover {
+        transform: translateY(-6px);
+    }
+
+    .mission-item h3 {
+        font-size: 22px;
+        margin-bottom: 10px;
+        color: #C4A46B;
+    }
+
+    .mission-item p {
+        color: #555;
+    }
+
+/* ===== LỢI ÍCH ===== */
+.about-benefits h2 {
+    text-align: center;
+    font-size: 32px;
+    margin-bottom: 40px;
+}
+
+.benefit-list {
+    display: flex;
+    justify-content: center;
+    gap: 40px;
+    flex-wrap: wrap;
+}
+
+.benefit-item {
+    width: 260px;
+    background: #fff;
+    padding: 25px;
+    text-align: center;
+    border-radius: 16px;
+    box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+}
+
+    .benefit-item img {
+        width: 60px;
+        margin-bottom: 15px;
+    }
+
+    .benefit-item p {
+        font-size: 16px;
+        color: #444;
+    }
+
+/* ===== CTA ===== */
+.about-cta {
+    text-align: center;
+    background: linear-gradient(135deg, #C4A46B, #A89F98);
+    color: white;
+    padding: 60px 20px;
+    border-radius: 20px;
+}
+
+    .about-cta h2 {
+        font-size: 28px;
+        margin-bottom: 25px;
+    }
+
+.btn-cta {
+    display: inline-block;
+    background: #fff;
+    color: #A89F98;
+    padding: 14px 36px;
+    border-radius: 50px;
+    font-size: 17px;
+    font-weight: 600;
+    text-decoration: none;
+    transition: all 0.3s ease;
+}
+
+    .btn-cta:hover {
+        background: #f1f1f1;
+        transform: translateY(-2px);
+    }
+
+/* ===== RESPONSIVE ===== */
+@media (max-width: 992px) {
+    .about-section {
+        flex-direction: column;
+    }
+
+    .about-mission {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* ================== TRANG ABOUT ================== */
+.about-page {
+    margin-top: 90px; /* QUAN TRỌNG: tránh header fixed che nội dung */
+}
+
+/* ================== HERO ================== */
+.about-hero {
+    position: relative;
+    height: 320px;
+    background: url("../Image/eatclean2.jpg") center center / cover no-repeat;
+}
+
+    .about-hero .overlay {
+        position: absolute;
+        inset: 0;
+        background: rgba(0,0,0,0.55);
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        text-align: center;
+        color: #fff;
+        padding: 20px;
+    }
+
+    .about-hero h1 {
+        font-size: 42px;
+        margin-bottom: 10px;
+    }
+
+    .about-hero p {
+        font-size: 18px;
+        opacity: 0.9;
+    }
+
+/* ================== SECTION CHUNG ================== */
+.about-section,
+.about-mission,
+.about-benefits,
+.about-cta {
+    max-width: 1200px;
+    margin: 80px auto;
+    padding: 0 20px;
+}
+
+/* ================== GIỚI THIỆU ================== */
+.about-section {
+    display: flex;
+    align-items: center;
+    gap: 50px;
+}
+
+/* Nội dung */
+.content-about {
+    flex: 1;
+}
+
+    .content-about h2 {
+        font-size: 32px;
+        margin-bottom: 15px;
+    }
+
+    .content-about p {
+        font-size: 17px;
+        color: #555;
+        line-height: 1.7;
+    }
+
+/* Ảnh – căn giữa tuyệt đối */
+.about-section .image {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+    .about-section .image img {
+        max-width: 85%;
+        border-radius: 18px;
+        box-shadow: 0 12px 35px rgba(0,0,0,0.18);
+    }
+
+/* ================== SỨ MỆNH ================== */
+.about-mission {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 30px;
+    text-align: center;
+}
+
+.mission-item {
+    background: #f8f8f8;
+    padding: 35px 25px;
+    border-radius: 18px;
+    transition: transform 0.3s ease;
+}
+
+    .mission-item:hover {
+        transform: translateY(-6px);
+    }
+
+    .mission-item h3 {
+        font-size: 22px;
+        margin-bottom: 12px;
+        color: #C4A46B;
+    }
+
+    .mission-item p {
+        color: #555;
+        line-height: 1.6;
+    }
+
+/* ================== LỢI ÍCH ================== */
+.about-benefits h2 {
+    text-align: center;
+    font-size: 32px;
+    margin-bottom: 45px;
+}
+
+.benefit-list {
+    display: flex;
+    justify-content: center;
+    gap: 40px;
+    flex-wrap: wrap;
+}
+
+.benefit-item {
+    width: 260px;
+    background: #fff;
+    padding: 28px 22px;
+    text-align: center;
+    border-radius: 18px;
+    box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+}
+
+    /* ICON CĂN GIỮA */
+    .benefit-item img {
+        display: block;
+        margin: 0 auto 16px;
+        width: 60px;
+    }
+
+    .benefit-item p {
+        font-size: 16px;
+        color: #444;
+    }
+
+/* ================== CTA ================== */
+.about-cta {
+    text-align: center;
+    background: linear-gradient(135deg, #C4A46B, #A89F98);
+    color: #fff;
+    padding: 70px 20px;
+    border-radius: 22px;
+}
+
+    .about-cta h2 {
+        font-size: 28px;
+        margin-bottom: 28px;
+    }
+
+.btn-cta {
+    display: inline-block;
+    background: #fff;
+    color: #A89F98;
+    padding: 14px 38px;
+    border-radius: 50px;
+    font-size: 17px;
+    font-weight: 600;
+    text-decoration: none;
+    transition: all 0.3s ease;
+}
+
+    .btn-cta:hover {
+        background: #f1f1f1;
+        transform: translateY(-2px);
+    }
+
+/* ================== RESPONSIVE ================== */
+@media (max-width: 992px) {
+    .about-section {
+        flex-direction: column;
+        text-align: center;
+    }
+
+        .about-section .image img {
+            max-width: 100%;
+        }
+
+    .about-mission {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* Ghi đè giao diện SweetAlert2 */
+.swal-gold-popup {
+    border-radius: 20px !important; /* Bo góc hộp thoại */
+    font-family: 'Segoe UI', sans-serif !important;
+}
+
+.swal-gold-title {
+    color: #C4A46B !important; /* Tiêu đề màu Gold */
+    font-weight: 800 !important;
+    letter-spacing: 1px !important;
+}
+
+.swal-gold-input {
+    border-radius: 12px !important; /* Bo góc ô chọn */
+    border: 1.5px solid #eee !important;
+}
+
+.swal-gold-button {
+    border-radius: 50px !important; /* Nút bo tròn hoàn toàn */
+    padding: 12px 35px !important;
+    font-weight: 700 !important;
+    text-transform: uppercase !important;
+    font-size: 0.8rem !important;
+    box-shadow: 0 4px 15px rgba(196, 164, 107, 0.3) !important;
+}
+
+/* Ẩn viền xanh khi click vào nút của Swal */
+.swal2-styled:focus {
+    box-shadow: none !important;
+}

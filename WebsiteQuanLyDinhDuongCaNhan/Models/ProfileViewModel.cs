@@ -55,8 +55,8 @@ public class ProfileViewModel
             DateOfBirth = user.DateOfBirth;
             //Age = user.Age;
             Gender = user.Gender;
-            Height = user.Height;
-            Weight = user.Weight;
+            Height = (double?)user.Height;
+            Weight = (double?)user.Weight;
             ActivityLevel = user.ActivityLevel;
             Goal = user.Goal;
             PreferredDiet = user.PreferredDiet;

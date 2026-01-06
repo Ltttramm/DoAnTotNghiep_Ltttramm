@@ -44,15 +44,15 @@ public class SpoonacularService
             string logSeparator = "========== SPOONACULAR API REQUEST ==========";
             string logUrl = $"[REQUEST] TDEE Value: {tdee}";
             string logFullUrl = $"[REQUEST] Full URL: {url}";
-            
+
             System.Diagnostics.Debug.WriteLine(logSeparator);
             System.Diagnostics.Debug.WriteLine(logUrl);
             System.Diagnostics.Debug.WriteLine(logFullUrl);
-            
+
             Console.WriteLine(logSeparator);
             Console.WriteLine(logUrl);
             Console.WriteLine(logFullUrl);
-            
+
             System.Diagnostics.Trace.WriteLine(logSeparator);
             System.Diagnostics.Trace.WriteLine(logUrl);
             System.Diagnostics.Trace.WriteLine(logFullUrl);
@@ -70,13 +70,13 @@ public class SpoonacularService
 
                 string logStatus = $"[RESPONSE] Status: {response.StatusCode}";
                 string logContent = $"[RESPONSE] Content: {jsonData}";
-                
+
                 System.Diagnostics.Debug.WriteLine(logStatus);
                 System.Diagnostics.Debug.WriteLine(logContent);
-                
+
                 Console.WriteLine(logStatus);
                 Console.WriteLine(logContent);
-                
+
                 System.Diagnostics.Trace.WriteLine(logStatus);
                 System.Diagnostics.Trace.WriteLine(logContent);
 
@@ -88,7 +88,7 @@ public class SpoonacularService
                 // Check for empty content
                 if (string.IsNullOrWhiteSpace(jsonData))
                 {
-                     return "{\"error\": \"API returned empty response\"}";
+                    return "{\"error\": \"API returned empty response\"}";
                 }
 
                 return jsonData;
@@ -127,15 +127,15 @@ public class SpoonacularService
             string logSeparator = "========== SPOONACULAR WEEKLY API REQUEST ==========";
             string logUrl = $"[WEEKLY REQUEST] TDEE Value: {tdee}";
             string logFullUrl = $"[WEEKLY REQUEST] Full URL: {url}";
-            
+
             System.Diagnostics.Debug.WriteLine(logSeparator);
             System.Diagnostics.Debug.WriteLine(logUrl);
             System.Diagnostics.Debug.WriteLine(logFullUrl);
-            
+
             Console.WriteLine(logSeparator);
             Console.WriteLine(logUrl);
             Console.WriteLine(logFullUrl);
-            
+
             System.Diagnostics.Trace.WriteLine(logSeparator);
             System.Diagnostics.Trace.WriteLine(logUrl);
             System.Diagnostics.Trace.WriteLine(logFullUrl);
@@ -150,13 +150,13 @@ public class SpoonacularService
 
                 string logStatus = $"[WEEKLY RESPONSE] Status: {response.StatusCode}";
                 string logContent = $"[WEEKLY RESPONSE] Content Length: {jsonData.Length} chars";
-                
+
                 System.Diagnostics.Debug.WriteLine(logStatus);
                 System.Diagnostics.Debug.WriteLine(logContent);
-                
+
                 Console.WriteLine(logStatus);
                 Console.WriteLine(logContent);
-                
+
                 System.Diagnostics.Trace.WriteLine(logStatus);
                 System.Diagnostics.Trace.WriteLine(logContent);
 
@@ -167,7 +167,7 @@ public class SpoonacularService
 
                 if (string.IsNullOrWhiteSpace(jsonData))
                 {
-                     return "{\"error\": \"API returned empty response\"}";
+                    return "{\"error\": \"API returned empty response\"}";
                 }
 
                 return jsonData;
@@ -187,31 +187,31 @@ public class SpoonacularService
     {
         try
         {
-            string url = $"{baseUrl}/recipes/{recipeId}/information";
-            url += $"?apiKey={apiKey}";
-            url += $"&includeNutrition=true";
+            // THÊM: includeIngredientsNutrition=true để lấy calo cho từng nguyên liệu
+            string url = $"{baseUrl}/recipes/{recipeId}/information" +
+                         $"?apiKey={apiKey}" +
+                         $"&includeNutrition=true" +
+                         $"&includeIngredientsNutrition=true";
 
-            Console.WriteLine($"Spoonacular URL (Recipe Info): {url}");
+            System.Diagnostics.Debug.WriteLine($"[DEBUG] Recipe Info URL: {url}");
 
             using (HttpClient client = new HttpClient())
             {
+                client.DefaultRequestHeaders.Add("User-Agent", "Mozilla/5.0");
                 HttpResponseMessage response = await client.GetAsync(url);
 
                 if (!response.IsSuccessStatusCode)
                 {
                     string errorContent = await response.Content.ReadAsStringAsync();
-                    Console.WriteLine($"Spoonacular API Error: {response.StatusCode} - {errorContent}");
-                    return "{\"error\": \"Không thể lấy thông tin công thức\"}";
+                    return $"{{\"error\": \"API Error: {response.StatusCode}\"}}";
                 }
 
-                string jsonData = await response.Content.ReadAsStringAsync();
-                return jsonData;
+                return await response.Content.ReadAsStringAsync();
             }
         }
         catch (Exception ex)
         {
-            Console.WriteLine("Error in GetRecipeInformationAsync: " + ex.Message);
-            return "{\"error\": \"Đã xảy ra lỗi khi lấy thông tin công thức\"}";
+            return $"{{\"error\": \"{ex.Message}\"}}";
         }
     }
 
@@ -296,15 +296,20 @@ public class SpoonacularService
     {
         try
         {
-            string url = $"{baseUrl}/food/ingredients/{ingredientId}/information";
-            url += $"?apiKey={apiKey}";
-            url += $"&amount={amount}";
-            url += $"&unit={unit}";
+            // THAY ĐỔI: Thêm tham số includeNutrition=true vào URL
+            string url = $"{baseUrl}/food/ingredients/{ingredientId}/information" +
+                         $"?apiKey={apiKey}" +
+                         $"&amount={amount}" +
+                         $"&unit={unit}" +
+                         $"&includeNutrition=true"; // Thêm dòng này
 
             Console.WriteLine($"Spoonacular URL (Ingredient Info): {url}");
 
             using (HttpClient client = new HttpClient())
             {
+                // Thêm User-Agent để tránh bị một số hệ thống chặn request
+                client.DefaultRequestHeaders.Add("User-Agent", "Mozilla/5.0");
+
                 HttpResponseMessage response = await client.GetAsync(url);
 
                 if (!response.IsSuccessStatusCode)
@@ -323,5 +328,23 @@ public class SpoonacularService
             Console.WriteLine("Error in GetIngredientInformationAsync: " + ex.Message);
             return "{\"error\": \"Đã xảy ra lỗi\"}";
         }
+
+    }
+    public async Task<string> GetRecipesInformationBulkAsync(string ids)
+    {
+        try
+        {
+            // Quan trọng: includeNutrition=true để lấy dữ liệu Calo
+            string url = $"{baseUrl}/recipes/informationBulk?apiKey={apiKey}&ids={ids}&includeNutrition=true";
+
+            using (HttpClient client = new HttpClient())
+            {
+                client.DefaultRequestHeaders.Add("User-Agent", "Mozilla/5.0");
+                HttpResponseMessage response = await client.GetAsync(url);
+                if (!response.IsSuccessStatusCode) return null;
+                return await response.Content.ReadAsStringAsync();
+            }
+        }
+        catch { return null; }
     }
 }

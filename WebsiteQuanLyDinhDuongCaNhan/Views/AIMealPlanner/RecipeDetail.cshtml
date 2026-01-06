@@ -6,12 +6,13 @@
 
 @if (ViewBag.ErrorMessage != null)
 {
-    <div class="container mt-[150px]">
-        <div class="alert alert-danger text-center">
-            <h4>⚠️ Lỗi</h4>
-            <p>@ViewBag.ErrorMessage</p>
-            <a href="@Url.Action("MealPlan", "AIMealPlanner")" class="btn btn-primary mt-3">
-                ← Quay lại Thực Đơn
+    <div class="container mt-[150px] animate-fade-in">
+        <div class="alert alert-custom shadow-sm text-center p-5 border-gold">
+            <h2 class="display-6">⚠️</h2>
+            <h4 class="fw-bold">Không tìm thấy công thức</h4>
+            <p class="text-muted">@ViewBag.ErrorMessage</p>
+            <a href="@Url.Action("MealPlan", "AIMealPlanner")" class="btn btn-gold px-4 mt-3">
+                <i class="bi bi-arrow-left"></i> Quay lại Thực Đơn
             </a>
         </div>
     </div>
@@ -23,54 +24,66 @@ else if (ViewBag.RecipeData != null)
         var recipeData = Newtonsoft.Json.Linq.JObject.Parse(ViewBag.RecipeData);
         var title = recipeData["title"]?.ToString() ?? "Unknown Recipe";
         var imageRaw = recipeData["image"]?.ToString() ?? "";
-        // Fix image URL - prepend Spoonacular CDN if it's a relative path
         var image = imageRaw.StartsWith("http") ? imageRaw : $"https://spoonacular.com/recipeImages/{imageRaw}";
         var readyInMinutes = recipeData["readyInMinutes"]?.ToString() ?? "N/A";
         var servings = recipeData["servings"]?.ToString() ?? "1";
         var summary = recipeData["summary"]?.ToString() ?? "";
         var sourceUrl = recipeData["sourceUrl"]?.ToString() ?? "#";
         
-        var ingredients = recipeData["extendedIngredients"];
-        var instructions = recipeData["analyzedInstructions"];
+        var ingredients = recipeData["extendedIngredients"] as Newtonsoft.Json.Linq.JArray;
+        var instructions = recipeData["analyzedInstructions"] as Newtonsoft.Json.Linq.JArray;
         var nutrition = recipeData["nutrition"];
+        var nutrients = (nutrition?["nutrients"] as Newtonsoft.Json.Linq.JArray);
 
-        <div class="container recipe-detail-container mt-[150px]">
-            <!-- Back Button -->
-            <div class="mb-4">
-                <a href="@Url.Action("MealPlan", "AIMealPlanner")" class="btn btn-outline-secondary">
-                    &larr; Back to Meal Plan
+        <div class="container recipe-wrapper mt-[120px] pb-5 animate-fade-in">
+            @* --- NAVIGATION --- *@
+            <div class="d-flex justify-content-between align-items-center mb-4 px-2">
+                <a href="@Url.Action("MealPlan", "AIMealPlanner")" class="text-decoration-none text-gold fw-bold back-link">
+                    <i class="bi bi-chevron-left"></i> BACK TO MEAL PLAN
                 </a>
+                <button class="btn btn-outline-gold btn-sm px-3" onclick="window.print()">
+                    <i class="bi bi-printer me-1"></i> Print Recipe
+                </button>
             </div>
 
-            <!-- Recipe Header -->
-            <div class="recipe-header card shadow-lg mb-4">
+            @* --- HERO SECTION --- *@
+            <div class="hero-card shadow-lg mb-5 border-0">
                 <div class="row g-0">
-                    <div class="col-md-5">
-                        @if (!string.IsNullOrEmpty(image))
-                        {
-                            <img src="@image" class="recipe-main-image" alt="@title">
-                        }
+                    <div class="col-lg-6">
+                        <div class="image-zoom-container">
+                            <img src="@image" class="hero-image" alt="@title">
+                        </div>
                     </div>
-                    <div class="col-md-7">
-                        <div class="card-body p-4">
-                            <h1 class="recipe-title">@title</h1>
-                            <div class="recipe-meta">
-                                <span class="badge bg-success me-2">
-                                    <i class="bi bi-clock"></i> @readyInMinutes minutes
-                                </span>
-                                <span class="badge bg-info">
-                                    <i class="bi bi-people"></i> @servings servings
-                                </span>
-                            </div>
-                            @if (!string.IsNullOrEmpty(summary))
-                            {
-                                <div class="recipe-summary mt-3">
-                                    @Html.Raw(summary)
+                    <div class="col-lg-6 d-flex align-items-center bg-soft-cream">
+                        <div class="card-body p-4 p-md-5">
+                            <h1 class="recipe-title-display">@title</h1>
+                            
+                            <div class="d-flex flex-wrap gap-3 mb-4">
+                                <div class="info-badge-v2">
+                                    <i class="bi bi-alarm"></i>
+                                    <div><small>READY IN</small><strong> @readyInMinutes MINS</strong></div>
                                 </div>
-                            }
-                            <div class="mt-3">
-                                <a href="@sourceUrl" target="_blank" class="btn btn-outline-primary">
-                                    [Source]
+                                <div class="info-badge-v2">
+                                    <i class="bi bi-people"></i>
+                                    <div><small>SERVINGS</small><strong> @servings PERSONS</strong></div>
+                                </div>
+                                @if (nutrients != null)
+                                {
+                                    var cal = nutrients.FirstOrDefault(n => n["name"]?.ToString() == "Calories");
+                                    if (cal != null) {
+                                        <div class="info-badge-v2 highlight-energy">
+                                            <i class="bi bi-fire"></i>
+                                            <div><small>ENERGY</small><strong> @((int)cal["amount"]) KCAL/SERVING</strong></div>
+                                        </div>
+                                    }
+                                }
+                            </div>
+
+                            <div class="recipe-summary-box-v2">@Html.Raw(summary)</div>
+                            
+                            <div class="mt-4">
+                                <a href="@sourceUrl" target="_blank" class="btn btn-gold px-4 shadow-sm">
+                                    View Source <i class="bi bi-box-arrow-up-right ms-2"></i>
                                 </a>
                             </div>
                         </div>
@@ -78,294 +91,270 @@ else if (ViewBag.RecipeData != null)
                 </div>
             </div>
 
-            <div class="row">
-                <!-- Left Column: Ingredients & Instructions -->
-                <div class="col-lg-8">
-                    <!-- Ingredients Section -->
-                    @if (ingredients != null && ingredients.HasValues)
-                    {
-                        <div class="card shadow-sm mb-4">
-                            <div class="card-header bg-success text-white">
-                                <h3 class="mb-0">Ingredients</h3>
-                            </div>
-                            <div class="card-body">
-                                <ul class="ingredients-list">
-                                    @foreach (var ingredient in ingredients)
-                                    {
-                                        var original = ingredient["original"]?.ToString() ?? "";
-                                        var ingredientNutrition = ingredient["nutrition"];
-                                        var calories = "0";
+            <div class="row g-4">
+                @* --- INGREDIENTS SECTION --- *@
+                <div class="col-lg-4">
+                    <div class="glass-card h-100 shadow-sm bg-ingredient">
+                        <div class="card-header-custom p-4 d-flex align-items-center gap-2">
+                            <i class="bi bi-cart-check fs-4 text-gold"></i>
+                            <h5 class="mb-0 fw-bold">Ingredients</h5>
+                        </div>
+                        <div class="card-body-custom p-3">
+                            @if (ingredients != null) {
+                                foreach (var item in ingredients) {
+                                    // SỬA: Cách lấy dinh dưỡng chi tiết của từng nguyên liệu
+                                    var ingNutrients = item["nutrition"]?["nutrients"] as Newtonsoft.Json.Linq.JArray;
+                                    var ingCal = ingNutrients?.FirstOrDefault(n => n["name"]?.ToString() == "Calories");
+                                    var uniqueId = "ing-" + item["id"] + "-" + Guid.NewGuid().ToString().Substring(0, 5);
+                                    
+                                    <div class="ingredient-item-v2 d-flex justify-content-between align-items-center">
+                                        <div class="d-flex align-items-center flex-grow-1">
+                                            <input type="checkbox" id="@uniqueId" class="ing-checkbox">
+                                            <label for="@uniqueId" class="ing-label mb-0 ms-2">
+                                                @item["original"]
+                                            </label>
+                                        </div>
                                         
-                                        // Extract calories from nutrition data
-                                        if (ingredientNutrition != null && ingredientNutrition["nutrients"] != null)
+                                        @if (ingCal != null)
                                         {
-                                            foreach (var nutrient in ingredientNutrition["nutrients"])
-                                            {
-                                                if (nutrient["name"]?.ToString() == "Calories")
-                                                {
-                                                    calories = nutrient["amount"]?.ToString() ?? "0";
-                                                    break;
-                                                }
-                                            }
+                                            <span class="badge rounded-pill border-gold-subtle ms-2">
+                                                <i class="bi bi-fire text-orange"></i> @((int)ingCal["amount"]) kcal
+                                            </span>
                                         }
-                                        
-                                        <li>
-                                            <span class="ingredient-name">- @original</span>
-                                            <span class="ingredient-calories">(@calories kcal)</span>
-                                        </li>
-                                    }
-                                </ul>
-                            </div>
+                                    </div>
+                                }
+                            }
+                            else {
+                                <p class="text-muted text-center py-4">No ingredients found.</p>
+                            }
                         </div>
-                    }
-
-                    <!-- Instructions Section -->
-                    @if (instructions != null && instructions.HasValues && instructions[0]["steps"] != null)
-                    {
-                        <div class="card shadow-sm mb-4">
-                            <div class="card-header bg-primary text-white">
-                                <h3 class="mb-0">Cooking Instructions</h3>
-                            </div>
-                            <div class="card-body">
-                                <ol class="instructions-list">
-                                    @foreach (var step in instructions[0]["steps"])
-                                    {
-                                        var stepNumber = step["number"]?.ToString() ?? "";
-                                        var stepText = step["step"]?.ToString() ?? "";
-                                        <li class="instruction-step">
-                                            <strong>Step @stepNumber:</strong> @stepText
-                                        </li>
-                                    }
-                                </ol>
-                            </div>
-                        </div>
-                    }
-                    else
-                    {
-                        <div class="alert alert-info">
-                            <p>No detailed instructions available. Please check the source for more information.</p>
-                        </div>
-                    }
+                    </div>
                 </div>
 
-                <!-- Right Column: Nutrition -->
+                @* --- INSTRUCTIONS SECTION --- *@
                 <div class="col-lg-4">
-                    @if (nutrition != null && nutrition["nutrients"] != null)
-                    {
-                        var nutrients = nutrition["nutrients"];
-                        
-                        <div class="card shadow-sm mb-4 sticky-nutrition">
-                            <div class="card-header bg-warning text-dark">
-                                <h3 class="mb-0">Nutrition Facts</h3>
-                                <small class="text-muted">Per serving</small>
-                            </div>
-                            <div class="card-body">
-                                <div class="nutrition-grid">
-                                    @foreach (var nutrient in nutrients)
-                                    {
-                                        var name = nutrient["name"]?.ToString() ?? "";
-                                        var amount = nutrient["amount"]?.ToString() ?? "0";
-                                        var unit = nutrient["unit"]?.ToString() ?? "";
-                                        var percentOfDaily = nutrient["percentOfDailyNeeds"]?.ToString() ?? "";
-                                        
-                                        double amountValue = 0;
-                                        double.TryParse(amount, out amountValue);
-                                        
-                                        <div class="nutrition-item">
-                                            <div class="nutrition-name">@name</div>
-                                            <div class="nutrition-value">
-                                                @amountValue.ToString("F1") @unit
-                                                @if (!string.IsNullOrEmpty(percentOfDaily) && percentOfDaily != "0")
-                                                {
-                                                    <span class="text-muted small">(@percentOfDaily%)</span>
-                                                }
-                                            </div>
+                    <div class="glass-card h-100 shadow-sm bg-instruction">
+                        <div class="card-header-custom p-4 d-flex align-items-center gap-2">
+                            <i class="bi bi-mortar-pestle fs-4 text-gold"></i>
+                            <h5 class="mb-0 fw-bold">Instructions</h5>
+                        </div>
+                        <div class="card-body-custom p-4">
+                            @if (instructions != null && instructions.HasValues && instructions[0]["steps"] != null) {
+                                <div class="timeline-steps-v2">
+                                    @foreach (var step in instructions[0]["steps"]) {
+                                        <div class="step-card-v2 shadow-sm">
+                                            <div class="step-number">@step["number"]</div>
+                                            <div class="step-text">@step["step"]</div>
                                         </div>
                                     }
                                 </div>
-                            </div>
+                            }
+                            else {
+                                <div class="text-center py-5 text-muted">
+                                    <i class="bi bi-journal-x display-4 d-block mb-3"></i>
+                                    <p>Check source for instructions.</p>
+                                </div>
+                            }
                         </div>
-                    }
-                    else
-                    {
-                        <div class="alert alert-warning">
-                            <p>No detailed nutrition information available.</p>
-                        </div>
-                    }
+                    </div>
                 </div>
-            </div>
 
-            <!-- Bottom Back Button -->
-            <div class="text-center mt-4 mb-5">
-                <a href="@Url.Action("MealPlan", "AIMealPlanner")" class="btn btn-primary btn-lg">
-                    &larr; Back to Meal Plan
-                </a>
+                @* --- NUTRITION DETAILS SECTION --- *@
+                <div class="col-lg-4">
+                    <div class="glass-card shadow-lg sticky-top-custom bg-white nutrition-card">
+                        <div class="card-header-custom border-0 pt-4 px-4 d-flex align-items-center gap-2">
+                            <i class="bi bi-activity text-gold fs-4"></i>
+                            <h5 class="mb-0 fw-bold">Nutrition Details</h5>
+                        </div>
+                        
+                        <div class="card-body p-4">
+                            @if (nutrients != null)
+                            {
+                                <div class="macro-display-grid mb-4">
+                                    @{
+                                        var mainNutrients = new[] { 
+                                            new { Name = "PROTEIN", Key="Protein" }, 
+                                            new { Name = "FAT", Key="Fat" }, 
+                                            new { Name = "CARBS", Key="Carbohydrates" } 
+                                        };
+
+                                        foreach (var macro in mainNutrients)
+                                        {
+                                            var n = nutrients.FirstOrDefault(x => x["name"]?.ToString() == macro.Key);
+                                            if (n != null)
+                                            {
+                                                var dv = (double)(n["percentOfDailyNeeds"] ?? 0);
+                                                <div class="macro-item-container">
+                                                    <div class="macro-circle-box" style="--percent: @dv;">
+                                                        <svg viewBox="0 0 100 100">
+                                                            <circle class="bg" cx="50" cy="50" r="42"></circle>
+                                                            <circle class="prog" cx="50" cy="50" r="42"></circle>
+                                                        </svg>
+                                                        <div class="macro-value-center">@((int)dv)%</div>
+                                                    </div>
+                                                    <div class="macro-info-bottom">
+                                                        <span class="label">@macro.Name</span>
+                                                        <span class="amount">@((int)n["amount"])@n["unit"]</span>
+                                                    </div>
+                                                </div>
+                                            }
+                                        }
+                                    }
+                                </div>
+
+                                <hr class="my-4 opacity-10">
+
+                                <div class="micro-nutrients-scroll-area">
+                                    @foreach (var n in nutrients)
+                                    {
+                                        var name = n["name"]?.ToString();
+                                        if (name != "Protein" && name != "Fat" && name != "Carbohydrates" && name != "Calories")
+                                        {
+                                            var dv = (double)(n["percentOfDailyNeeds"] ?? 0);
+                                            <div class="micro-item mb-3 pe-2">
+                                                <div class="d-flex justify-content-between align-items-end mb-1">
+                                                    <span class="micro-name">@name</span>
+                                                    <span class="micro-stats">@((int)n["amount"])@n["unit"] <span class="ms-1 text-muted">(@((int)dv)%)</span></span>
+                                                </div>
+                                                <div class="elegant-progress">
+                                                    <div class="elegant-bar" style="width: @(dv > 100 ? 100 : dv)%;">
+                                                        <div class="shimmer"></div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        }
+                                    }
+                                </div>
+                            }
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     }
     catch (Exception ex)
     {
-        <div class="container mt-[150px]">
-            <div class="alert alert-danger">
-                <h4>Lỗi xử lý dữ liệu</h4>
-                <p>@ex.Message</p>
-            </div>
-        </div>
+        <div class="container mt-[150px] alert alert-danger"><strong>Error:</strong> @ex.Message</div>
     }
 }
 
 <style>
-    .recipe-detail-container {
-        max-width: 1400px;
-        margin: 0 auto;
+    :root {
+        --gold: #C4A46B;
+        --gold-dark: #a68b5a;
+        --gold-light: #fbf8f2;
+        --bg-cream: #fdfaf5;
+        --text-dark: #2d3436;
+        --orange-energy: #fd7e14;
     }
 
-    .recipe-header {
-        border: none;
-        border-radius: 15px;
-        overflow: hidden;
+    body { background-color: var(--bg-cream); color: var(--text-dark); font-family: 'Inter', sans-serif; }
+
+    /* Buttons & Navigation */
+    .btn-gold { background: var(--gold); color: white; border-radius: 12px; font-weight: 700; border: none; padding: 12px 24px; transition: 0.3s; }
+    .btn-gold:hover { background: var(--gold-dark); transform: translateY(-2px); color: white; box-shadow: 0 5px 15px rgba(196, 164, 107, 0.3); }
+    .btn-outline-gold { border: 1.5px solid var(--gold); color: var(--gold); border-radius: 10px; font-weight: 600; background: transparent; transition: 0.3s; }
+    .btn-outline-gold:hover { background: var(--gold); color: white; }
+    .text-gold { color: var(--gold) !important; }
+
+    /* Hero Section */
+    .hero-card { border-radius: 30px; overflow: hidden; background: white; }
+    .bg-soft-cream { background-color: #fffcf7; }
+    .recipe-title-display { font-size: 2.3rem; font-weight: 850; line-height: 1.2; margin-bottom: 20px; color: #1a1a1a; }
+    .image-zoom-container { height: 100%; min-height: 450px; overflow: hidden; }
+    .hero-image { width: 100%; height: 100%; object-fit: cover; transition: 0.5s; }
+    .hero-card:hover .hero-image { transform: scale(1.03); }
+
+    .info-badge-v2 { display: flex; align-items: center; gap: 10px; background: white; padding: 8px 15px; border-radius: 12px; border: 1px solid rgba(196, 164, 107, 0.15); }
+    .info-badge-v2 i { color: var(--gold); font-size: 1.2rem; }
+    .highlight-energy { background: #1a1a1a !important; color: white !important; border: none; }
+    .highlight-energy i { color: #ffcc00 !important; }
+
+    /* Ingredients Section */
+    .glass-card { border-radius: 24px; border: 1px solid rgba(196, 164, 107, 0.1); }
+    .bg-ingredient { background-color: #fffcf7; }
+    
+    .ingredient-item-v2 { 
+        display: flex; align-items: center; padding: 12px; margin-bottom: 8px; 
+        background: white; border-radius: 12px; border: 1px solid rgba(196, 164, 107, 0.05); 
+        transition: 0.2s;
+    }
+    .ingredient-item-v2:hover { border-color: var(--gold); background: var(--gold-light); transform: translateX(5px); }
+    
+    .ing-checkbox { width: 19px; height: 19px; accent-color: var(--gold); cursor: pointer; flex-shrink: 0; }
+    .ing-label { font-size: 0.88rem; cursor: pointer; color: #444; flex-grow: 1; transition: 0.2s; }
+    
+    /* Hiệu ứng gạch ngang khi check */
+    .ing-checkbox:checked + .ing-label {
+        text-decoration: line-through;
+        color: #adb5bd;
     }
 
-    .recipe-main-image {
-        width: 100%;
-        height: 400px;
-        object-fit: cover;
+    .border-gold-subtle {
+        border: 1px solid rgba(196, 164, 107, 0.4);
+        background-color: #fbf8f2;
+        color: var(--gold-dark);
+        font-weight: 600;
+        font-size: 0.72rem;
+        padding: 5px 10px;
+        white-space: nowrap;
+    }
+    .text-orange { color: var(--orange-energy) !important; }
+
+    /* Instructions Section */
+    .bg-instruction { background-color: #ffffff; }
+    .step-card-v2 { background: var(--gold-light); padding: 20px; border-radius: 18px; margin-bottom: 15px; border-left: 5px solid var(--gold); position: relative; }
+    .step-number { background: var(--gold); color: white; width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.8rem; font-weight: bold; margin-bottom: 10px; }
+    .step-text { color: #555; line-height: 1.6; font-size: 0.92rem; }
+
+    /* Nutrition Section */
+    .nutrition-card { border-radius: 32px; border: 1px solid rgba(196, 164, 107, 0.15); }
+    .macro-display-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; text-align: center; }
+    .macro-item-container { display: flex; flex-direction: column; align-items: center; gap: 8px; }
+
+    .macro-circle-box {
+        position: relative;
+        width: 80px; height: 80px;
+        display: flex; align-items: center; justify-content: center;
+    }
+    .macro-circle-box svg { transform: rotate(-90deg); width: 100%; height: 100%; position: absolute; }
+    .macro-circle-box circle { fill: none; stroke-width: 8; stroke-linecap: round; }
+    .macro-circle-box circle.bg { stroke: #f0f0f0; }
+    .macro-circle-box circle.prog {
+        stroke: var(--gold);
+        stroke-dasharray: 264;
+        stroke-dashoffset: 264;
+        transition: stroke-dashoffset 1.5s cubic-bezier(0.4, 0, 0.2, 1);
     }
 
-    .recipe-title {
-        color: #C4A46B;
-        font-size: 2rem;
-        font-weight: bold;
-        margin-bottom: 1rem;
+    .nutrition-card:hover circle.prog {
+        stroke-dashoffset: calc(264 - (264 * var(--percent)) / 100);
     }
 
-    .recipe-meta {
-        margin-bottom: 1rem;
-    }
+    .macro-value-center { font-weight: 800; font-size: 1rem; color: var(--text-dark); z-index: 1; }
+    .macro-info-bottom .label { font-size: 0.65rem; font-weight: 700; color: #95a5a6; display: block; }
+    .macro-info-bottom .amount { font-weight: 700; font-size: 0.85rem; color: var(--gold); }
 
-    .recipe-meta .badge {
-        font-size: 1rem;
-        padding: 0.5rem 1rem;
-    }
+    /* Progress Bars */
+    .micro-nutrients-scroll-area { max-height: 380px; overflow-y: auto; padding-right: 8px; }
+    .micro-nutrients-scroll-area::-webkit-scrollbar { width: 4px; }
+    .micro-nutrients-scroll-area::-webkit-scrollbar-thumb { background: var(--gold); border-radius: 10px; }
 
-    .recipe-summary {
-        color: #666;
-        line-height: 1.6;
-    }
+    .elegant-progress { width: 100%; height: 6px; background: #f0f0f0; border-radius: 50px; overflow: hidden; position: relative; }
+    .elegant-bar { height: 100%; background-color: var(--gold); border-radius: 50px; position: relative; }
+    .shimmer { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent); transform: translateX(-100%); }
+    .nutrition-card:hover .shimmer { animation: shimmerWave 2s infinite; }
 
-    .recipe-summary p {
-        margin-bottom: 0.5rem;
-    }
+    .sticky-top-custom { position: sticky; top: 130px; z-index: 10; }
+    .recipe-summary-box-v2 { background: rgba(196, 164, 107, 0.05); padding: 18px; border-radius: 15px; font-size: 0.9rem; border: 1px solid rgba(196, 164, 107, 0.1); line-height: 1.5; color: #555; }
 
-    .card-header h3 {
-        font-size: 1.5rem;
-        font-weight: bold;
-    }
+    @@keyframes shimmerWave { 0% { transform: translateX(-100%); } 100% { transform: translateX(100%); } }
+    .animate-fade-in { animation: fadeIn 0.8s ease-out; }
+    @@keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
 
-    .ingredients-list {
-        list-style: none;
-        padding: 0;
-    }
-
-    .ingredients-list li {
-        padding: 0.75rem;
-        border-bottom: 1px solid #f0f0f0;
-        font-size: 1.05rem;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-    }
-
-    .ingredient-name {
-        flex: 1;
-    }
-
-    .ingredient-calories {
-        color: #C4A46B;
-        font-weight: bold;
-        font-size: 0.9rem;
-        margin-left: 10px;
-    }
-
-    .ingredients-list li:last-child {
-        border-bottom: none;
-    }
-
-    .instructions-list {
-        padding-left: 0;
-        counter-reset: step-counter;
-    }
-
-    .instruction-step {
-        padding: 1.25rem;
-        margin-bottom: 1rem;
-        background: #f8f9fa;
-        border-left: 4px solid #0d6efd;
-        border-radius: 8px;
-        line-height: 1.8;
-    }
-
-    .instruction-step strong {
-        color: #0d6efd;
-        display: block;
-        margin-bottom: 0.5rem;
-    }
-
-    .sticky-nutrition {
-        position: sticky;
-        top: 20px;
-    }
-
-    .nutrition-grid {
-        max-height: 600px;
-        overflow-y: auto;
-    }
-
-    .nutrition-item {
-        display: flex;
-        justify-content: space-between;
-        padding: 0.75rem;
-        border-bottom: 1px solid #f0f0f0;
-    }
-
-    .nutrition-item:nth-child(even) {
-        background-color: #f8f9fa;
-    }
-
-    .nutrition-name {
-        font-weight: 500;
-        color: #333;
-    }
-
-    .nutrition-value {
-        font-weight: bold;
-        color: #C4A46B;
-        text-align: right;
-    }
-
-    .btn-outline-secondary {
-        border-color: #C4A46B;
-        color: #C4A46B;
-    }
-
-    .btn-outline-secondary:hover {
-        background-color: #C4A46B;
-        border-color: #C4A46B;
-        color: white;
-    }
-
-    @@media (max-width: 768px) {
-        .recipe-main-image {
-            height: 250px;
-        }
-
-        .recipe-title {
-            font-size: 1.5rem;
-        }
-
-        .sticky-nutrition {
-            position: relative;
-            top: 0;
-        }
+    @@media (max-width: 991px) {
+        .sticky-top-custom { position: static; }
+        .image-zoom-container { min-height: 300px; }
+        .recipe-title-display { font-size: 1.8rem; }
     }
 </style>

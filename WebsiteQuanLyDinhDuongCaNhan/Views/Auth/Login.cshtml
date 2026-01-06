@@ -9,43 +9,50 @@
 
 <div class="flex justify-center items-center min-h-screen bg-[#F5F5DC]">
     <div class="bg-white p-8 rounded-lg shadow-md w-96">
-        <h2 class="text-2xl font-bold text-center text-[#C4A46B] mb-6">Đăng nhập</h2>
+        <h2 class="text-2xl font-bold text-center text-[#C4A46B] mb-6">Login</h2>
 
-        <div id="error-message" class="text-red-500 text-sm hidden"></div>
+        <div id="error-message" class="text-red-500 text-sm hidden mb-4 text-center"></div>
 
         <form id="loginForm" class="space-y-4">
             <div>
-                <label asp-for="Email" class="block text-sm font-medium text-gray-700">Email</label>
-                <input asp-for="Email" id="email" class="mt-1 block w-full px-4 py-2 border rounded-md focus:ring-[#C4A46B] focus:border-[#C4A46B]">
+                <label asp-for="Email" class="block text-sm font-medium text-gray-700">Email Address</label>
+                <input asp-for="Email" id="email" placeholder="example@mail.com" class="mt-1 block w-full px-4 py-2 border rounded-md focus:ring-[#C4A46B] focus:border-[#C4A46B]">
                 <span asp-validation-for="Email" class="text-red-500 text-sm"></span>
             </div>
 
             <div>
-                <label asp-for="Password" class="block text-sm font-medium text-gray-700">Mật khẩu</label>
-                <input asp-for="Password" type="password" id="password" class="mt-1 block w-full px-4 py-2 border rounded-md focus:ring-[#C4A46B] focus:border-[#C4A46B]">
+                <label asp-for="Password" class="block text-sm font-medium text-gray-700">Password</label>
+                <input asp-for="Password" type="password" id="password" placeholder="••••••••" class="mt-1 block w-full px-4 py-2 border rounded-md focus:ring-[#C4A46B] focus:border-[#C4A46B]">
                 <span asp-validation-for="Password" class="text-red-500 text-sm"></span>
             </div>
 
-            <div class="flex items-center">
-                <input asp-for="RememberMe" id="rememberMe" type="checkbox" class="h-4 w-4 text-[#C4A46B] border-gray-300 rounded">
-                <label asp-for="RememberMe" class="ml-2 text-sm text-gray-600">Ghi nhớ tôi</label>
+            <div class="flex items-center justify-between">
+                <div class="flex items-center">
+                    <input asp-for="RememberMe" id="rememberMe" type="checkbox" class="h-4 w-4 text-[#C4A46B] border-gray-300 rounded">
+                    <label asp-for="RememberMe" class="ml-2 text-sm text-gray-600">Remember me</label>
+                </div>
             </div>
+
             <div class="text-center mt-4 text-sm text-gray-600 flex justify-center space-x-4">
-                <a href="/Auth/ForgotPassword" class="text-[#B8860B] hover:underline">Quên mật khẩu?</a>
+                <a href="/Auth/ForgotPassword" class="text-[#B8860B] hover:underline">Forgot password?</a>
                 <span>|</span>
-                <a href="/Auth/Register" class="text-[#B8860B] hover:underline">Đăng ký</a>
+                <a href="/Auth/Register" class="text-[#B8860B] hover:underline">Register</a>
             </div>
+
             <button type="submit"
-                    class="w-full bg-[#C4A46B] text-white py-2 rounded-md hover:bg-[#A89F98] transition">
-                Đăng nhập
+                    class="w-full bg-[#C4A46B] text-white py-2 rounded-md hover:bg-[#A89F98] transition font-semibold">
+                Login
             </button>
         </form>
 
-       
+        <div class="relative my-6">
+            <div class="absolute inset-0 flex items-center"><span class="w-full border-t"></span></div>
+            <div class="relative flex justify-center text-xs uppercase"><span class="bg-white px-2 text-gray-500">Or continue with</span></div>
+        </div>
 
-        <div class="text-center mt-4">
+        <div class="text-center">
             <a href="@Url.Action("GoogleLogin", "Auth")" class="w-full bg-[#db4437] text-white py-2 rounded-md hover:bg-[#b03a2e] transition block text-center">
-                <i class="fab fa-google"></i> Đăng nhập bằng Google
+                <i class="fab fa-google mr-2"></i> Login with Google
             </a>
         </div>
     </div>
@@ -55,14 +62,14 @@
 <script>
     $(document).ready(function () {
         $("#loginForm").submit(function (e) {
-            e.preventDefault(); // Ngăn reload trang
+            e.preventDefault(); // Prevent page reload
 
             let email = $("#email").val().trim();
             let password = $("#password").val().trim();
             let rememberMe = $("#rememberMe").is(":checked");
 
             if (!email || !password) {
-                $("#error-message").text("Vui lòng nhập email và mật khẩu.").removeClass("hidden");
+                $("#error-message").text("Please enter your email and password.").removeClass("hidden");
                 return;
             }
 
@@ -73,16 +80,15 @@
                 dataType: "json",
                 success: function (response) {
                     if (response.success) {
-                        window.location.href = response.redirectUrl; // Chuyển hướng nếu thành công
+                        window.location.href = response.redirectUrl; // Redirect on success
                     } else {
                         $("#error-message").text(response.message).removeClass("hidden");
                     }
                 },
                 error: function () {
-                    $("#error-message").text("Có lỗi xảy ra. Vui lòng thử lại!").removeClass("hidden");
+                    $("#error-message").text("An error occurred. Please try again!").removeClass("hidden");
                 }
             });
         });
     });
-
 </script>

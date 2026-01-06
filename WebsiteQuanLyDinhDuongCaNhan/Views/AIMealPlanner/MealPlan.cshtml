@@ -1,39 +1,877 @@
-﻿@{
+﻿@*@{
+        ViewBag.Title = "7-Day Meal Plan";
+        ViewData["HideFooter"] = true;
+    }
+
+    <div class="meal-plan-wrapper container pb-5" style="padding-top: 180px;">
+
+        <div class="header-content text-center mb-4">
+            <h1 class="fw-bold text-[#C4A46B] mb-2 main-title">7-DAY MEAL PLAN</h1>
+
+            <div class="tdee-badge mb-2 d-flex justify-content-center">
+                <span class="badge rounded-pill bg-gold-light px-3 py-2">
+                    <i class="fas fa-fire me-1"></i><small>Your TDEE:</small> <strong>@ViewBag.TDEE</strong> <small>kcal/day</small>
+                </span>
+            </div>
+
+            <p class="slogan-text">"A journey to health starts with a single meal plan"</p>
+        </div>
+
+        @if (ViewBag.WeeklyMealPlan != null)
+        {
+            try
+            {
+                var weeklyData = Newtonsoft.Json.Linq.JObject.Parse(ViewBag.WeeklyMealPlan);
+                var week = weeklyData["week"];
+
+                if (week != null)
+                {
+                    var days = new[] { "monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday" };
+                    var dayLabels = new[] { "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday" };
+
+                    <div class="selector-card mx-auto mb-5 shadow-sm">
+                        <div class="px-3 py-1 d-flex align-items-center justify-content-center">
+                            <label for="daySelect" class="me-2 mb-0 small fw-bold text-muted text-uppercase" style="font-size: 0.65rem;">Select:</label>
+                            <select id="daySelect" class="form-select custom-select" onchange="showDayMeals(this.value)">
+                                @for (int i = 0; i < days.Length; i++)
+                                {
+                                    <option value="@i">Day @(i + 1) - @dayLabels[i]</option>
+                                }
+                            </select>
+                        </div>
+                    </div>
+
+                    for (int dayIndex = 0; dayIndex < days.Length; dayIndex++)
+                    {
+                        var dayName = days[dayIndex];
+                        var dayData = week[dayName];
+
+                        if (dayData != null)
+                        {
+                            var meals = dayData["meals"];
+                            var nutrients = dayData["nutrients"];
+
+                            <div id="day-@dayIndex" class="day-container animate-fade-in" style="display: @(dayIndex == 0 ? "block" : "none")">
+
+                                <div class="nutrition-summary-box mx-auto mb-5" style="max-width: 850px;">
+                                    @if (nutrients != null)
+                                    {
+                                        <div class="main-cal-strip shadow-sm mb-3">
+                                            <span class="label">TOTAL DAILY ENERGY</span>
+                                            <div class="d-flex align-items-baseline justify-content-center">
+                                                <strong class="value">@((int)double.Parse(nutrients["calories"]?.ToString() ?? "0"))</strong>
+                                                <span class="unit ms-1">kcal</span>
+                                            </div>
+                                        </div>
+
+                                        <div class="sub-nutrients-row d-flex justify-content-center gap-3">
+                                            <div class="sub-nutri-item shadow-sm">
+                                                <span class="sub-value">@((int)double.Parse(nutrients["protein"]?.ToString() ?? "0"))g</span>
+                                                <span class="sub-label">Protein</span>
+                                            </div>
+                                            <div class="sub-nutri-item shadow-sm">
+                                                <span class="sub-value">@((int)double.Parse(nutrients["fat"]?.ToString() ?? "0"))g</span>
+                                                <span class="sub-label">Fat</span>
+                                            </div>
+                                            <div class="sub-nutri-item shadow-sm">
+                                                <span class="sub-value">@((int)double.Parse(nutrients["carbohydrates"]?.ToString() ?? "0"))g</span>
+                                                <span class="sub-label">Carbs</span>
+                                            </div>
+                                        </div>
+                                    }
+                                </div>
+
+                                <div class="row justify-content-center">
+                                    @{ int mealIndex = 0; }
+                                    @foreach (var meal in meals)
+                                    {
+                                        var mealId = meal["id"]?.ToString() ?? "";
+                                        var title = meal["title"]?.ToString() ?? "Unknown";
+                                        var readyInMinutes = meal["readyInMinutes"]?.ToString() ?? "N/A";
+                                        var servings = meal["servings"]?.ToString() ?? "1";
+                                        // Lấy calo của riêng món ăn này
+                                        var mealCalories = meal["calories"]?.ToString() ?? "0";
+                                        var imageRaw = meal["image"]?.ToString() ?? "";
+                                        var imageUrl = string.IsNullOrEmpty(imageRaw) ? "/images/default.jpg" :
+                                                       (imageRaw.StartsWith("http") ? imageRaw : $"https://spoonacular.com/recipeImages/{imageRaw}");
+
+                                        <div class="col-lg-10 mb-4 d-flex flex-column align-items-center">
+                                            <div class="meal-type-label">
+                                                <span>@(mealIndex == 0 ? "BREAKFAST" : (mealIndex == 1 ? "LUNCH" : "DINNER"))</span>
+                                            </div>
+
+                                            <div class="meal-card-horizontal w-100">
+                                                <div class="meal-card-img">
+                                                    <img src="@imageUrl" alt="@title" class="zoom-img" />
+                                                    <div class="meal-cal-badge">
+                                                        <strong>@((int)double.Parse(mealCalories))</strong> kcal
+                                                    </div>
+                                                </div>
+                                                <div class="meal-card-content">
+                                                    <h3 class="meal-title">@title</h3>
+                                                    <div class="meal-meta d-flex gap-3">
+                                                        <span><i class="far fa-clock me-1 text-gold"></i> @readyInMinutes mins</span>
+                                                        <span><i class="fas fa-utensils me-1 text-gold"></i> @servings servings</span>
+                                                    </div>
+                                                    <div class="meal-actions mt-auto">
+                                                        <a href="@Url.Action("RecipeDetail", "AIMealPlanner", new { recipeId = mealId })" class="btn btn-main">View Recipe</a>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        mealIndex++;
+                                    }
+                                </div>
+                            </div>
+                        }
+                    }
+                }
+            }
+            catch (Exception)
+            {
+                <div class="alert alert-danger text-center">Error loading meal plan.</div>
+            }
+        }
+    </div>
+
+    <style>
+        :root {
+            --main-gold: #C4A46B;
+            --soft-bg: #fdfbf7;
+            --dark-text: #333;
+            --gold-hover: #ac8e56;
+        }
+
+        body {
+            font-size: 0.85rem;
+            background-color: var(--soft-bg);
+            color: var(--dark-text);
+        }
+
+        .main-title {
+            font-size: 2.5rem;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+        }
+
+        .slogan-text {
+            font-size: 0.9rem;
+            opacity: 0.7;
+            font-style: italic;
+            color: black;
+        }
+
+        /* Day Selector */
+        .selector-card {
+            max-width: 260px;
+            background: white;
+            border-radius: 10px;
+            border: 1px solid var(--main-gold);
+        }
+
+        .custom-select {
+            border: none !important;
+            box-shadow: none !important;
+            font-weight: 600;
+            color: var(--main-gold);
+            font-size: 0.85rem;
+            padding: 0.1rem 0.5rem;
+            width: auto;
+            cursor: pointer;
+        }
+
+        /* Nutrition Box */
+        .main-cal-strip {
+            background: var(--main-gold);
+            color: white;
+            padding: 12px;
+            border-radius: 12px;
+            text-align: center;
+        }
+
+            .main-cal-strip .label {
+                font-size: 0.6rem;
+                text-transform: uppercase;
+                letter-spacing: 1px;
+                display: block;
+                margin-bottom: 2px;
+            }
+
+            .main-cal-strip .value {
+                font-size: 2.2rem;
+                line-height: 1;
+            }
+
+        .sub-nutri-item {
+            background: white;
+            flex: 1;
+            padding: 8px;
+            border-radius: 10px;
+            text-align: center;
+            border: 1px solid #eee;
+        }
+
+            .sub-nutri-item .sub-value {
+                display: block;
+                font-size: 1rem;
+                font-weight: 700;
+            }
+
+            .sub-nutri-item .sub-label {
+                font-size: 0.6rem;
+                text-transform: uppercase;
+                color: #999;
+            }
+
+        /* Meal Card Horizontal */
+        .meal-card-horizontal {
+            display: flex;
+            background: white;
+            border-radius: 15px;
+            overflow: hidden;
+            height: 180px; /* Thu nhỏ thêm một chút cho cân đối */
+            box-shadow: 0 5px 15px rgba(0,0,0,0.03);
+        }
+
+        .meal-card-img {
+            flex: 0 0 32%;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .zoom-img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: 0.6s ease;
+        }
+
+        .meal-card-horizontal:hover .zoom-img {
+            transform: scale(1.08);
+        }
+
+        /* Calo Badge trên ảnh */
+        .meal-cal-badge {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            background: rgba(255, 255, 255, 0.9);
+            color: var(--dark-text);
+            padding: 3px 10px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            border: 1px solid var(--main-gold);
+            z-index: 2;
+        }
+
+            .meal-cal-badge strong {
+                color: var(--main-gold);
+            }
+
+        .meal-card-content {
+            flex: 1;
+            padding: 15px 20px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .meal-title {
+            font-size: 1.05rem;
+            font-weight: 700;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            margin-bottom: 8px;
+        }
+
+        .meal-meta {
+            font-size: 0.8rem;
+            color: #666;
+            margin-bottom: 10px;
+        }
+
+        .text-gold {
+            color: var(--main-gold);
+        }
+
+        .meal-type-label {
+            margin-bottom: -10px;
+            z-index: 5;
+        }
+
+            .meal-type-label span {
+                background: var(--main-gold);
+                color: white;
+                padding: 3px 12px;
+                border-radius: 50px;
+                font-weight: bold;
+                font-size: 0.65rem;
+                text-transform: uppercase;
+            }
+
+        .btn-main {
+            background-color: var(--main-gold);
+            color: white;
+            border-radius: 50px;
+            padding: 5px 18px;
+            font-weight: bold;
+            font-size: 0.8rem;
+            text-decoration: none;
+            align-self: flex-start;
+        }
+
+            .btn-main:hover {
+                background-color: var(--gold-hover);
+                color: white;
+                transform: translateY(-1px);
+            }
+
+        .bg-gold-light {
+            background-color: rgba(196, 164, 107, 0.1);
+            color: var(--main-gold);
+            border: 1px solid var(--main-gold);
+        }
+
+        .animate-fade-in {
+            animation: fadeIn 0.4s ease-out;
+        }
+
+        @@keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(8px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @@media (max-width: 768px) {
+            .meal-card-horizontal {
+                height: auto;
+                flex-direction: column;
+            }
+
+            .meal-card-img {
+                height: 150px;
+            }
+
+            .meal-card-content {
+                padding: 15px;
+            }
+        }
+    </style>
+
+    <script>
+        function showDayMeals(dayIndex) {
+            document.querySelectorAll('.day-container').forEach(el => el.style.display = 'none');
+            document.getElementById('day-' + dayIndex).style.display = 'block';
+            const headerPos = document.querySelector('.header-content').offsetTop - 100;
+            window.scrollTo({ top: headerPos, behavior: 'smooth' });
+        }
+    </script>*@
+
+@*@{
+        ViewBag.Title = "7-Day Meal Plan";
+        ViewData["HideFooter"] = true;
+    }
+
+    @using Newtonsoft.Json.Linq
+
+    <div class="meal-plan-wrapper container pb-5" style="padding-top: 150px;">
+
+        <div class="header-content text-center mb-4">
+            <h1 class="fw-bold text-gold mb-2 main-title">7-DAY MEAL PLAN</h1>
+
+            <div class="tdee-badge mb-3 d-flex justify-content-center align-items-center gap-2 flex-wrap">
+                <span class="badge rounded-pill bg-gold-light px-3 py-2 text-dark border">
+                    <i class="fas fa-fire me-1 text-gold"></i>
+                    <small>Your TDEE:</small> <strong>@ViewBag.TDEE</strong> <small>kcal/day</small>
+                </span>
+
+                <a href="@Url.Action("GenerateNewPlan", "AIMealPlanner")"
+                   class="btn btn-refresh shadow-sm"
+                   id="btnRefresh">
+                    <i class="fas fa-sync-alt me-1"></i> Refresh Plan
+                </a>
+            </div>
+
+            <p class="slogan-text text-muted">"A journey to health starts with a single meal plan"</p>
+        </div>
+
+        @if (TempData["ErrorMessage"] != null)
+        {
+            <div class="alert alert-warning mx-auto text-center mb-4 shadow-sm" style="max-width: 600px; border-radius: 50px;">
+                <i class="fas fa-exclamation-triangle me-2"></i> @TempData["ErrorMessage"]
+            </div>
+        }
+
+        @if (ViewBag.WeeklyMealPlan != null)
+        {
+            try
+            {
+                var weeklyData = JObject.Parse(ViewBag.WeeklyMealPlan);
+                var week = weeklyData["week"];
+
+                if (week != null)
+                {
+                    var days = new[] { "monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday" };
+                    var dayLabels = new[] { "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday" };
+
+                    <div class="selector-card mx-auto mb-5 shadow-sm">
+                        <div class="px-3 py-1 d-flex align-items-center justify-content-center">
+                            <label for="daySelect" class="me-2 mb-0 small fw-bold text-muted text-uppercase" style="font-size: 0.65rem;">Select Day:</label>
+                            <select id="daySelect" class="form-select custom-select" onchange="showDayMeals(this.value)">
+                                @for (int i = 0; i < days.Length; i++)
+                                {
+                                    <option value="@i">Day @(i + 1) - @dayLabels[i]</option>
+                                }
+                            </select>
+                        </div>
+                    </div>
+
+                    for (int dayIndex = 0; dayIndex < days.Length; dayIndex++)
+                    {
+                        var dayName = days[dayIndex];
+                        var dayData = week[dayName];
+
+                        if (dayData != null)
+                        {
+                            var meals = dayData["meals"];
+                            var nutrients = dayData["nutrients"];
+                            double totalDayCals = (double)(nutrients?["calories"] ?? 0);
+
+                            <div id="day-@dayIndex" class="day-container animate-fade-in" style="display: @(dayIndex == 0 ? "block" : "none")">
+
+                                <div class="nutrition-summary-box mx-auto mb-5" style="max-width: 850px;">
+                                    @if (nutrients != null)
+                                    {
+                                        <div class="main-cal-strip shadow-sm mb-3">
+                                            <span class="label d-block small opacity-75">TOTAL DAILY ENERGY</span>
+                                            <div class="d-flex align-items-baseline justify-content-center">
+                                                <strong class="value">@((int)totalDayCals)</strong>
+                                                <span class="unit ms-1">kcal</span>
+                                            </div>
+                                        </div>
+
+                                        <div class="sub-nutrients-row d-flex justify-content-center gap-2 gap-md-3">
+                                            <div class="sub-nutri-item shadow-sm">
+                                                <span class="sub-value">@((int)(nutrients["protein"] ?? 0))g</span>
+                                                <span class="sub-label">Protein</span>
+                                            </div>
+                                            <div class="sub-nutri-item shadow-sm">
+                                                <span class="sub-value">@((int)(nutrients["fat"] ?? 0))g</span>
+                                                <span class="sub-label">Fat</span>
+                                            </div>
+                                            <div class="sub-nutri-item shadow-sm">
+                                                <span class="sub-value">@((int)(nutrients["carbohydrates"] ?? 0))g</span>
+                                                <span class="sub-label">Carbs</span>
+                                            </div>
+                                        </div>
+                                    }
+                                </div>
+
+                                <div class="row justify-content-center">
+                                    @{ int mealIndex = 0; }
+                                    @foreach (var meal in meals)
+                                    {
+                                        var mealId = meal["id"]?.ToString() ?? "";
+                                        var title = meal["title"]?.ToString() ?? "Untitled Recipe";
+                                        var readyInMinutes = meal["readyInMinutes"]?.ToString() ?? "--";
+                                        var servings = meal["servings"]?.ToString() ?? "1";
+
+                                        // LOGIC TÍNH CALO THEO TỶ LỆ ĐỂ TRÁNH HIỆN SỐ 0
+                                        double mealCals = 0;
+                                        if (meal["calories"] != null && (double)meal["calories"] > 0)
+                                        {
+                                            mealCals = (double)meal["calories"];
+                                        }
+                                        else
+                                        {
+                                            // Tỷ lệ gợi ý: Sáng 25%, Trưa 40%, Tối 35%
+                                            double ratio = mealIndex == 0 ? 0.25 : (mealIndex == 1 ? 0.40 : 0.35);
+                                            mealCals = totalDayCals * ratio;
+                                        }
+
+                                        var imageRaw = meal["image"]?.ToString() ?? "";
+                                        var imageUrl = string.IsNullOrEmpty(imageRaw) ? "/images/default-meal.jpg" :
+                                                       (imageRaw.StartsWith("http") ? imageRaw : $"https://spoonacular.com/recipeImages/{imageRaw}");
+
+                                        <div class="col-lg-9 mb-4 d-flex flex-column align-items-center">
+                                            <div class="meal-type-label">
+                                                <span>@(mealIndex == 0 ? "BREAKFAST" : (mealIndex == 1 ? "LUNCH" : "DINNER"))</span>
+                                            </div>
+
+                                            <div class="meal-card-horizontal w-100">
+                                                <div class="meal-card-img">
+                                                    <img src="@imageUrl" alt="@title" class="zoom-img" loading="lazy" />
+                                                    <div class="meal-cal-badge highlight-energy-mini">
+                                                        <i class="fas fa-fire me-1 text-warning"></i>
+                                                        <strong>@((int)Math.Round(mealCals))</strong> <small>kcal/serving</small>
+                                                    </div>
+                                                </div>
+                                                <div class="meal-card-content">
+                                                    <h3 class="meal-title text-truncate-2">@title</h3>
+                                                    <div class="meal-meta d-flex gap-3 mb-3">
+                                                        <span><i class="far fa-clock me-1 text-gold"></i> @readyInMinutes min</span>
+                                                        <span><i class="fas fa-utensils me-1 text-gold"></i> @servings serving@(int.Parse(servings) > 1 ? "s" : "")</span>
+                                                    </div>
+                                                    <div class="meal-actions mt-auto">
+                                                        <a href="@Url.Action("RecipeDetail", "AIMealPlanner", new { recipeId = mealId })" class="btn btn-main">
+                                                            View Recipe <i class="fas fa-chevron-right ms-1" style="font-size: 0.7rem;"></i>
+                                                        </a>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        mealIndex++;
+                                    }
+                                </div>
+                            </div>
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                <div class="alert alert-danger text-center">Error processing data: @ex.Message</div>
+            }
+        }
+        else
+        {
+            <div class="text-center py-5">
+                <div class="empty-state-icon mb-3">
+                    <i class="fas fa-utensils fa-3x text-muted opacity-25"></i>
+                </div>
+                <p class="text-muted">No meal plan found. Click "Refresh Plan" to generate one.</p>
+            </div>
+        }
+    </div>
+
+    <style>
+        :root {
+            --main-gold: #C4A46B;
+            --soft-bg: #fdfbf7;
+            --dark-text: #2c2c2c;
+            --gold-hover: #ac8e56;
+            --gold-light: #f9f4e8;
+        }
+
+        body {
+            font-size: 0.9rem;
+            background-color: var(--soft-bg);
+            color: var(--dark-text);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        /* FIX KHUNG ĐEN Ở SELECT */
+        .custom-select {
+            border: none !important;
+            background-color: transparent !important;
+            font-weight: 700;
+            color: var(--main-gold) !important;
+            cursor: pointer;
+            outline: none !important; /* Mất khung đen */
+            box-shadow: none !important;
+        }
+
+            .custom-select:focus {
+                outline: none !important;
+                box-shadow: 0 0 0 2px rgba(196, 164, 107, 0.2) !important; /* Đổ bóng vàng nhẹ khi focus */
+                border-radius: 8px;
+            }
+
+        .text-gold {
+            color: var(--main-gold);
+        }
+
+        .bg-gold-light {
+            background-color: var(--gold-light);
+        }
+
+        .main-title {
+            font-size: 2.2rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            color: var(--main-gold);
+        }
+
+        .btn-refresh {
+            background-color: white;
+            border: 1px solid var(--main-gold);
+            color: var(--main-gold);
+            border-radius: 50px;
+            padding: 6px 18px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+            .btn-refresh:hover {
+                background-color: var(--main-gold);
+                color: white;
+                transform: translateY(-2px);
+            }
+
+        .selector-card {
+            max-width: 280px;
+            background: white;
+            border-radius: 12px;
+            border: 1px solid rgba(196, 164, 107, 0.3);
+            transition: all 0.3s ease;
+        }
+
+            .selector-card:hover {
+                border-color: var(--main-gold);
+                box-shadow: 0 5px 15px rgba(0,0,0,0.05) !important;
+            }
+
+        .main-cal-strip {
+            background: var(--main-gold);
+            color: white;
+            padding: 20px;
+            border-radius: 15px;
+            text-align: center;
+        }
+
+            .main-cal-strip .value {
+                font-size: 2.5rem;
+                font-weight: 800;
+                line-height: 1;
+            }
+
+        .sub-nutri-item {
+            background: white;
+            flex: 1;
+            padding: 12px;
+            border-radius: 12px;
+            text-align: center;
+            border: 1px solid #eee;
+        }
+
+            .sub-nutri-item .sub-value {
+                display: block;
+                font-size: 1.1rem;
+                font-weight: 700;
+                color: var(--main-gold);
+            }
+
+            .sub-nutri-item .sub-label {
+                font-size: 0.65rem;
+                text-transform: uppercase;
+                color: #888;
+                letter-spacing: 1px;
+            }
+
+        .meal-card-horizontal {
+            display: flex;
+            background: white;
+            border-radius: 20px;
+            overflow: hidden;
+            height: 190px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+            border: 1px solid rgba(0,0,0,0.02);
+        }
+
+        .meal-card-img {
+            flex: 0 0 35%;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .zoom-img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.6s cubic-bezier(0.165, 0.84, 0.44, 1);
+        }
+
+        .meal-card-horizontal:hover .zoom-img {
+            transform: scale(1.1);
+        }
+
+        .meal-cal-badge {
+            position: absolute;
+            bottom: 12px;
+            right: 12px;
+            background: rgba(255, 255, 255, 0.95);
+            padding: 6px 14px;
+            border-radius: 50px;
+            font-size: 0.75rem;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            border: 1px solid rgba(196, 164, 107, 0.2);
+        }
+
+        .meal-card-content {
+            flex: 1;
+            padding: 20px 25px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .meal-title {
+            font-size: 1.2rem;
+            font-weight: 700;
+            margin-bottom: 10px;
+            color: var(--dark-text);
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        .meal-type-label {
+            margin-bottom: -12px;
+            z-index: 5;
+        }
+
+            .meal-type-label span {
+                background: var(--main-gold);
+                color: white;
+                padding: 4px 16px;
+                border-radius: 50px;
+                font-weight: 800;
+                font-size: 0.7rem;
+                letter-spacing: 1px;
+                box-shadow: 0 4px 10px rgba(196, 164, 107, 0.3);
+            }
+
+        .btn-main {
+            background-color: var(--main-gold);
+            color: white;
+            border-radius: 50px;
+            padding: 7px 20px;
+            font-weight: 700;
+            font-size: 0.85rem;
+            transition: all 0.3s ease;
+        }
+
+            .btn-main:hover {
+                background-color: var(--gold-hover);
+                color: white;
+                transform: translateX(5px);
+            }
+
+        .animate-fade-in {
+            animation: fadeIn 0.5s ease-out forwards;
+        }
+
+        @@keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @@media (max-width: 768px) {
+            .meal-card-horizontal {
+                height: auto;
+                flex-direction: column;
+            }
+
+            .meal-card-img {
+                height: 220px;
+                flex: 0 0 100%;
+            }
+
+            .main-title {
+                font-size: 1.8rem;
+            }
+
+            .meal-plan-wrapper {
+                padding-top: 100px !important;
+            }
+        }
+    </style>
+
+    <script>
+        function showDayMeals(dayIndex) {
+            const containers = document.querySelectorAll('.day-container');
+            containers.forEach(el => {
+                el.style.display = 'none';
+                el.classList.remove('animate-fade-in');
+            });
+
+            const activeDay = document.getElementById('day-' + dayIndex);
+            if (activeDay) {
+                activeDay.style.display = 'block';
+                void activeDay.offsetWidth;
+                activeDay.classList.add('animate-fade-in');
+            }
+        }
+
+        document.getElementById('btnRefresh').addEventListener('click', function (e) {
+            if (!confirm('Create a new plan? Your current weekly plan will be replaced.')) {
+                e.preventDefault();
+                return false;
+            }
+            this.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i> Cooking your plan...';
+            this.classList.add('disabled', 'opacity-75');
+        });
+    </script>*@
+
+@{
     ViewBag.Title = "7-Day Meal Plan";
     ViewData["HideFooter"] = true;
 }
 
-<h2 class="text-2xl font-bold text-center text-[#C4A46B] mb-6 mt-[150px]">7-Day Meal Plan</h2>
-<div class="text-center mb-5">
-    <p><strong>Your TDEE:</strong> <span class="text-primary fw-bold">@ViewBag.TDEE kcal/day</span></p>
-    <p class="text-muted small">Weekly meal plan tailored to your daily energy needs</p>
-</div>
+@using Newtonsoft.Json.Linq
+@using System.Web @* Dùng cho HttpUtility nếu cần *@
 
-@if (ViewBag.ErrorMessage != null)
-{
-    <div class="alert alert-danger text-center">
-        <strong>Error:</strong> @ViewBag.ErrorMessage
+<div class="meal-plan-wrapper container pb-5" style="padding-top: 120px;">
+
+    <div class="header-content text-center mb-5">
+        <h1 class="class="fw-bold text-gold mb-2 main-title" style="font-family: 'Montserrat', sans-serif !important; font-weight: 900 !important; letter-spacing: 5px; color: #C4A46B !important; text-transform: uppercase;font-size: 50px">7-DAY MEAL PLAN</h1>
+        <div class="tdee-badge mb-3 d-flex justify-content-center align-items-center gap-3 flex-wrap">
+            @* Badge TDEE *@
+            <span class="badge rounded-pill bg-gold-light px-3 py-2 border-gold-thin" style="color: #000 !important; border-radius: 20px; border-color: black;">
+                <i class="fas fa-fire me-1 text-gold"></i>
+                <small>Your TDEE:</small> <strong>@ViewBag.TDEE</strong> <small>kcal/day</small>
+            </span>
+
+            @* Nút Refresh Plan *@
+            <a href="@Url.Action("GenerateNewPlan", "AIMealPlanner")" class="btn btn-refresh-solid">
+                <i class="fas fa-sync-alt me-1"></i> Refresh Plan
+            </a>
+        </div>
+        @* Đã sửa màu chữ slogan ở đây thành màu vàng đậm sang trọng *@
+        <p class="slogan-text italic" style="color: #8a6d3b; font-size: 1.05rem;">
+            "A journey to health starts with a single meal plan"
+        </p>
     </div>
-}
 
-@if (ViewBag.WeeklyMealPlan != null)
-{
-    try
+    @if (TempData["ErrorMessage"] != null)
     {
-        var weeklyData = Newtonsoft.Json.Linq.JObject.Parse(ViewBag.WeeklyMealPlan);
-        var week = weeklyData["week"];
-        
-        if (week != null)
+        <div class="alert alert-warning mx-auto text-center mb-4 shadow-sm" style="max-width: 600px; border-radius: 50px;">
+            <i class="fas fa-exclamation-triangle me-2"></i> @TempData["ErrorMessage"]
+        </div>
+    }
+
+    @if (ViewBag.WeeklyMealPlan != null)
+    {
+        try
         {
-            var days = new[] { "monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday" };
-            var dayLabels = new[] { "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday" };
-            
-            <!-- Day Selector Dropdown -->
-            <div class="day-selector-container mb-4">
-                <div class="card shadow-sm">
-                    <div class="card-body">
-                        <label for="daySelect" class="form-label fw-bold">Select Day:</label>
-                        <select id="daySelect" class="form-select form-select-lg" onchange="showDayMeals(this.value)">
+            var weeklyData = JObject.Parse(ViewBag.WeeklyMealPlan);
+            var week = weeklyData["week"];
+
+            if (week != null)
+            {
+                var days = new[] { "monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday" };
+                var dayLabels = new[] { "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday" };
+
+                <div class="selector-card mx-auto mb-5 shadow-sm">
+                    <div class="px-3 py-1 d-flex align-items-center justify-content-center">
+                        <label for="daySelect" class="me-2 mb-0 small fw-bold text-muted text-uppercase" style="font-size: 0.65rem;">Select Day:</label>
+                        <select id="daySelect" class="form-select custom-select" onchange="showDayMeals(this.value)">
                             @for (int i = 0; i < days.Length; i++)
                             {
                                 <option value="@i">Day @(i + 1) - @dayLabels[i]</option>
@@ -41,268 +879,559 @@
                         </select>
                     </div>
                 </div>
-            </div>
 
-            <!-- Render all 7 days -->
-            for (int dayIndex = 0; dayIndex < days.Length; dayIndex++)
-            {
-                var dayName = days[dayIndex];
-                var dayData = week[dayName];
-                
-                if (dayData != null)
+                for (int dayIndex = 0; dayIndex < days.Length; dayIndex++)
                 {
-                    var meals = dayData["meals"];
-                    var nutrients = dayData["nutrients"];
-                    
-                    <div id="day-@dayIndex" class="day-container" style="display: @(dayIndex == 0 ? "block" : "none")">
-                        <!-- Daily Summary -->
-                        <div class="nutrition-summary text-center mb-4">
-                            <h5 class="text-success">Day @(dayIndex + 1) - @dayLabels[dayIndex]</h5>
-                            <div class="d-flex justify-content-center gap-4 flex-wrap">
+                    var dayName = days[dayIndex];
+                    var dayData = week[dayName];
+
+                    if (dayData != null)
+                    {
+                        var meals = dayData["meals"];
+                        var nutrients = dayData["nutrients"];
+                        double totalDayCals = (double)(nutrients?["calories"] ?? 0);
+
+                        <div id="day-@dayIndex" class="day-container animate-fade-in" style="display: @(dayIndex == 0 ? "block" : "none")">
+
+                            <div class="nutrition-summary-box mx-auto mb-5" style="max-width: 850px;">
                                 @if (nutrients != null)
                                 {
-                                    <div><strong>Calories:</strong> @((int)double.Parse(nutrients["calories"]?.ToString() ?? "0")) kcal</div>
-                                    <div><strong>Protein:</strong> @((int)double.Parse(nutrients["protein"]?.ToString() ?? "0"))g</div>
-                                    <div><strong>Fat:</strong> @((int)double.Parse(nutrients["fat"]?.ToString() ?? "0"))g</div>
-                                    <div><strong>Carbs:</strong> @((int)double.Parse(nutrients["carbohydrates"]?.ToString() ?? "0"))g</div>
-                                }
-                            </div>
-                        </div>
+                                    <div class="main-cal-strip shadow-sm mb-4">
+                                        <span class="label d-block small opacity-75">TOTAL DAILY ENERGY</span>
+                                        <div class="d-flex align-items-baseline justify-content-center">
+                                            <strong class="value">@((int)totalDayCals)</strong>
+                                            <span class="unit ms-2">kcal</span>
+                                        </div>
+                                    </div>
 
-                        <!-- Meals for this day -->
-                        <div class="container">
-                            @{
-                                int mealIndex = 0;
-                            }
-                            @foreach (var meal in meals)
-                            {
-                                var mealId = meal["id"]?.ToString() ?? "";
-                                var title = meal["title"]?.ToString() ?? "Unknown";
-                                var readyInMinutes = meal["readyInMinutes"]?.ToString() ?? "N/A";
-                                var servings = meal["servings"]?.ToString() ?? "1";
-                                var imageRaw = meal["image"]?.ToString() ?? "";
-                                var imageUrl = string.IsNullOrEmpty(imageRaw) ? "/images/default.jpg" : 
-                                               (imageRaw.StartsWith("http") ? imageRaw : $"https://spoonacular.com/recipeImages/{imageRaw}");
-                                var sourceUrl = meal["sourceUrl"]?.ToString() ?? "#";
-
-                                <div class="meal-section mb-5">
-                                    <h4 class="text-center fw-bold text-success mb-3">
-                                        @{
-                                            var mealLabel = mealIndex == 0 ? "Breakfast" : (mealIndex == 1 ? "Lunch" : "Dinner");
-                                        }
-                                        @mealLabel
-                                    </h4>
-
-                                    <div class="card shadow-sm meal-card">
-                                        <div class="image-container">
-                                            <img src="@imageUrl" class="food-image" alt="@title">
+                                    <div class="sub-nutrients-row d-flex justify-content-center gap-3">
+                                        <div class="sub-nutri-item shadow-sm">
+                                            <span class="sub-value">@((int)(nutrients["protein"] ?? 0))g</span>
+                                            <span class="sub-label">Protein</span>
                                         </div>
 
-                                        <div class="card-body">
-                                            <h5 class="card-title text-center fw-bold text-success">@title</h5>
-                                            <div class="meal-info text-center">
-                                                <p class="mb-2"><strong>Time:</strong> @readyInMinutes minutes</p>
-                                                <p class="mb-2"><strong>Servings:</strong> @servings</p>
-                                            </div>
+                                        <div class="sub-nutri-item shadow-sm">
+                                            <span class="sub-value">@((int)(nutrients["fat"] ?? 0))g</span>
+                                            <span class="sub-label">Fat</span>
+                                        </div>
 
-                                            <div class="text-center mt-3">
-                                                <a href="@Url.Action("RecipeDetail", "AIMealPlanner", new { recipeId = mealId })" 
-                                                   class="btn btn-success me-2">
-                                                    View Recipe
-                                                </a>
-                                                <a href="@sourceUrl" target="_blank" class="btn btn-outline-primary">
-                                                    Source
-                                                </a>
+                                        <div class="sub-nutri-item shadow-sm">
+                                            <span class="sub-value">@((int)(nutrients["carbohydrates"] ?? 0))g</span>
+                                            <span class="sub-label">Carbs</span>
+                                        </div>
+                                    </div>
+                                }
+                            </div>
+
+                            <div class="row justify-content-center">
+                                @{ int mealIndex = 0; }
+                                @foreach (var meal in meals)
+                                {
+                                    var mealId = meal["id"]?.ToString() ?? "";
+                                    var title = meal["title"]?.ToString() ?? "Untitled Recipe";
+                                    var readyInMinutes = meal["readyInMinutes"]?.ToString() ?? "--";
+                                    var servings = meal["servings"]?.ToString() ?? "1";
+
+                                    double mealCals = 0;
+                                    if (meal["calories"] != null && (double)meal["calories"] > 0)
+                                    {
+                                        mealCals = (double)meal["calories"];
+                                    }
+                                    else
+                                    {
+                                        double ratio = mealIndex == 0 ? 0.25 : (mealIndex == 1 ? 0.40 : 0.35);
+                                        mealCals = totalDayCals * ratio;
+                                    }
+
+                                    var imageRaw = meal["image"]?.ToString() ?? "";
+                                    var imageUrl = string.IsNullOrEmpty(imageRaw) ? "/images/default-meal.jpg" :
+                                                   (imageRaw.StartsWith("http") ? imageRaw : $"https://spoonacular.com/recipeImages/{imageRaw}");
+
+                                    <div class="col-lg-9 mb-5 d-flex flex-column align-items-center">
+                                        <div class="meal-type-label">
+                                            <span>@(mealIndex == 0 ? "BREAKFAST" : (mealIndex == 1 ? "LUNCH" : "DINNER"))</span>
+                                        </div>
+
+                                        <div class="meal-card-horizontal w-100">
+                                            <div class="meal-card-img">
+                                                <img src="@imageUrl" alt="@title" class="zoom-img" loading="lazy" />
+
+                                                <button class="btn-favorite-heart" onclick="toggleFavorite(this, '@mealId')" title="Add to favorites">
+                                                    <i class="far fa-heart"></i>
+                                                </button>
+
+                                                <div class="meal-cal-badge">
+                                                    <i class="fas fa-fire me-1 text-warning"></i>
+                                                    <strong>@((int)Math.Round(mealCals))</strong> <small>kcal</small>
+                                                </div>
+                                            </div>
+                                            <div class="meal-card-content">
+                                                <h3 class="meal-title">@title</h3>
+                                                <div class="meal-meta d-flex gap-3 mb-3">
+                                                    <span><i class="far fa-clock me-1 text-gold"></i> @readyInMinutes min</span>
+                                                    <span><i class="fas fa-utensils me-1 text-gold"></i> @servings serving@(int.Parse(servings) > 1 ? "s" : "")</span>
+                                                </div>
+                                                <div class="meal-actions mt-auto">
+                                                    <a href="@Url.Action("RecipeDetail", "AIMealPlanner", new { recipeId = mealId })" class="btn btn-main">
+                                                        View Recipe <i class="fas fa-chevron-right ms-1" style="font-size: 0.7rem;"></i>
+                                                    </a>
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
-                                </div>
-                                
-                                mealIndex++;
-                            }
+                                    mealIndex++;
+                                }
+                            </div>
                         </div>
-                    </div>
+                    }
                 }
             }
         }
-        else
+        catch (Exception ex)
         {
-            <div class="alert alert-warning text-center">
-                <strong>No weekly meal plan data available.</strong>
-            </div>
+            <div class="alert alert-danger text-center">Error processing data: @ex.Message</div>
         }
     }
-    catch (Exception ex)
+    else
     {
-        <div class="alert alert-danger text-center">
-            <strong>Error parsing weekly meal plan:</strong> @ex.Message
+        <div class="text-center py-5">
+            <div class="empty-state-icon mb-3">
+                <i class="fas fa-utensils fa-3x text-muted opacity-25"></i>
+            </div>
+            <p class="text-muted">No meal plan found. Click "Refresh Plan" to generate one.</p>
         </div>
     }
-}
-else
-{
-    <div class="alert alert-info text-center">
-        <strong>No data to display.</strong>
-    </div>
-}
+</div>
 
-<!-- API Debug Log -->
-<!-- @if (ViewBag.ApiRawResponse != null)
-{
-    <div class="container mt-5">
-        <div class="alert alert-info">
-            <h4>API Debug Log</h4>
-            <details>
-                <summary>Click to view raw API response</summary>
-                <pre style="background-color: #f8f9fa; padding: 15px; border-radius: 5px; white-space: pre-wrap; word-break: break-all; max-height: 400px; overflow-y: auto;">@ViewBag.ApiRawResponse</pre>
-            </details>
-        </div>
-    </div>
-} -->
-
-<!-- JavaScript for day switching -->
-<script>
-    function showDayMeals(dayIndex) {
-        // Hide all day containers
-        document.querySelectorAll('.day-container').forEach(el => {
-            el.style.display = 'none';
-        });
-        
-        // Show selected day
-        document.getElementById('day-' + dayIndex).style.display = 'block';
-        
-        // Scroll to top of meal plan
-        window.scrollTo({ top: 200, behavior: 'smooth' });
-    }
-</script>
-
-<!-- CSS -->
 <style>
-    .title-menu {
-        margin-top: 150px;
+    :root {
+        --main-gold: #C4A46B;
+        --soft-bg: #fdfbf7;
+        --dark-text: #2c2c2c;
+        --gold-hover: #ac8e56;
+        --gold-light: #f9f4e8;
+        --heart-red: #ff4757;
+    }
+
+    body {
+        font-size: 0.95rem;
+        background-color: var(--soft-bg);
+        color: var(--dark-text);
+        font-family: 'Segoe UI', Roboto, sans-serif;
+    }
+
+    /* FIX SELECT UI */
+    .custom-select {
+        border: none !important;
+        background-color: transparent !important;
+        font-weight: 700;
+        color: var(--main-gold) !important;
+        cursor: pointer;
+        box-shadow: none !important;
+        padding-right: 30px;
+    }
+
+        .custom-select:focus {
+            outline: none !important;
+            background-color: var(--gold-light) !important;
+            border-radius: 8px;
+        }
+
+    .main-title {
+        font-size: 2.5rem;
+        text-transform: uppercase;
+        letter-spacing: 3px;
+        color: var(--main-gold);
+        text-shadow: 1px 1px 2px rgba(0,0,0,0.05);
+    }
+
+    .text-gold {
+        color: var(--main-gold);
+    }
+
+    .bg-gold-light {
+        background-color: var(--gold-light);
+    }
+
+    .btn-refresh {
+        background-color: white;
+        border: 1.5px solid var(--main-gold);
+        color: var(--main-gold);
+        border-radius: 50px;
+        padding: 8px 22px;
+        font-size: 0.85rem;
+        font-weight: 700;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+        .btn-refresh:hover {
+            background-color: var(--main-gold);
+            color: white;
+            transform: translateY(-3px) scale(1.02);
+        }
+    /* Nút Refresh màu vàng đồng của website, chữ trắng */
+    .btn-refresh-solid {
+        background-color: #C4A46B; /* Màu vàng đồng chủ đạo */
+        color: white !important;
+        border: none;
+        border-radius: 50px;
+        padding: 8px 22px;
+        font-size: 0.85rem;
+        font-weight: 700;
+        transition: all 0.3s ease;
+        display: inline-flex;
+        align-items: center;
+    }
+
+        .btn-refresh-solid:hover {
+            background-color: #ac8e56; /* Màu đậm hơn khi di chuột */
+            color: white !important;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(196, 164, 107, 0.4);
+        }
+
+    /* Viền nhẹ cho Badge TDEE để trông tinh tế hơn viền đen */
+    .border-gold-thin {
+        border: 1px solid rgba(196, 164, 107, 0.3) !important;
+    }
+    .selector-card {
+        max-width: 300px;
+        background: white;
+        border-radius: 15px;
+        border: 1px solid rgba(196, 164, 107, 0.25);
+    }
+
+    /* NUTRITION BOX */
+    /* Cấu trúc chính của Nutrition Box */
+    .nutrition-summary-box {
         text-align: center;
     }
 
-    .day-selector-container {
-        max-width: 600px;
-        margin: 0 auto;
+    /* Thanh Calo tổng - Màu vàng đồng bo góc lớn */
+    .main-cal-strip {
+        background: #C4A46B !important; /* Ép màu chuẩn ảnh */
+        color: white;
+        border-radius: 25px; /* Bo góc tròn mạnh như ảnh */
+        box-shadow: 0 10px 20px rgba(0,0,0,0.05);
     }
 
-    .day-container {
-        transition: opacity 0.3s ease-in-out;
+        .main-cal-strip .value {
+            font-size: 4rem; /* Chữ số rất lớn */
+            font-weight: 800;
+            line-height: 1;
+        }
+
+    /* Row bọc 3 ô: Ép buộc Flexbox hàng ngang */
+    .sub-nutrients-row {
+        display: flex !important;
+        flex-direction: row !important; /* Quan trọng: Giữ hàng ngang */
+        justify-content: center;
+        gap: 15px; /* Khoảng cách giữa các ô */
     }
 
-    /* Image container */
-    .image-container {
-        min-height: 250px;
-        max-height: 300px;
+    /* Từng ô chỉ số nhỏ (Trắng) với bóng đổ đậm hơn */
+    .sub-nutri-item {
+        background: white;
+        flex: 1;
+        max-width: 220px;
+        padding: 25px 15px;
+        border-radius: 20px;
+        border: 1px solid rgba(196, 164, 107, 0.15); /* Tăng nhẹ độ đậm viền */
+        /* Đổ bóng đậm hơn: Tăng Alpha từ 0.08 lên 0.15 và 0.2 */
+        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.15), 0 6px 6px rgba(0, 0, 0, 0.1);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1); /* Hiệu ứng mượt hơn */
+    }
+
+        /* Hiệu ứng khi di chuột vào: Bóng đổ loang rộng và đậm hơn nữa */
+        .sub-nutri-item:hover {
+            transform: translateY(-8px); /* Nhấc cao hơn một chút */
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.25); /* Bóng đổ khi hover cực kỳ rõ nét */
+            border-color: var(--main-gold);
+        }
+
+        .sub-nutri-item .sub-value {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: #C4A46B;
+            margin-bottom: 5px;
+        }
+
+        .sub-nutri-item .sub-label {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            color: #999;
+            font-weight: 600;
+            letter-spacing: 1px;
+        }
+
+    /* Responsive cho di động */
+    @@media (max-width: 576px) {
+        .sub-nutrients-row {
+            gap: 8px; /* Thu hẹp khoảng cách trên mobile */
+        }
+
+        .sub-nutri-item {
+            padding: 15px 5px;
+        }
+
+            .sub-nutri-item .sub-value {
+                font-size: 1.2rem;
+            }
+    }
+    /* MEAL CARD */
+    .meal-card-horizontal {
+        display: flex;
+        background: white;
+        border-radius: 25px;
+        overflow: hidden;
+        height: 210px;
+        box-shadow: 0 15px 35px rgba(0,0,0,0.06);
+        transition: transform 0.3s ease;
+    }
+
+        .meal-card-horizontal:hover {
+            transform: translateY(-5px);
+        }
+
+    .meal-card-img {
+        flex: 0 0 40%;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .zoom-img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: transform 0.8s ease;
+    }
+
+    .meal-card-horizontal:hover .zoom-img {
+        transform: scale(1.1);
+    }
+
+    /* HEART BUTTON */
+    .btn-favorite-heart {
+        position: absolute;
+        top: 15px;
+        right: 15px;
+        background: white;
+        border: none;
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
         display: flex;
         align-items: center;
         justify-content: center;
-        padding: 20px;
-        background-color: #f8f9fa;
-        border-radius: 10px 10px 0 0;
+        color: var(--heart-red);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        z-index: 10;
+        transition: all 0.2s ease;
     }
 
-    .food-image {
-        max-height: 250px;
-        max-width: 100%;
-        width: auto;
-        height: auto;
-        object-fit: contain;
-        border-radius: 8px;
-        display: block;
+        .btn-favorite-heart:hover {
+            transform: scale(1.1);
+            background: var(--heart-red);
+            color: white;
+        }
+
+        .btn-favorite-heart.active i {
+            font-weight: 900;
+        }
+
+    .meal-cal-badge {
+        position: absolute;
+        bottom: 15px;
+        right: 15px;
+        background: rgba(255, 255, 255, 0.95);
+        padding: 6px 16px;
+        border-radius: 50px;
+        font-size: 0.8rem;
+        font-weight: 600;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.1);
     }
 
-    .meal-section {
-        margin-bottom: 40px;
+    .meal-card-content {
+        flex: 1;
+        padding: 25px 30px;
+        display: flex;
+        flex-direction: column;
     }
 
-    .meal-card {
-        border-radius: 15px;
-        transition: transform 0.2s ease-in-out;
-        border: 2px solid #C4A46B;
+    .meal-title {
+        font-size: 1.3rem;
+        font-weight: 700;
+        color: var(--dark-text);
+        margin-bottom: 12px;
     }
 
-    .meal-card:hover {
-        transform: translateY(-5px);
-        box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+    .meal-type-label {
+        margin-bottom: -15px;
+        z-index: 5;
     }
 
-    .nutrition-summary {
-        background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
-        padding: 20px;
-        border-radius: 15px;
-        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        .meal-type-label span {
+            background: var(--main-gold);
+            color: white;
+            padding: 5px 20px;
+            border-radius: 50px;
+            font-weight: 800;
+            font-size: 0.75rem;
+            letter-spacing: 1.5px;
+            box-shadow: 0 4px 15px rgba(196, 164, 107, 0.4);
+        }
+
+    .btn-main {
+        background: var(--main-gold);
+        color: white;
+        border-radius: 50px;
+        padding: 10px 25px;
+        font-weight: 700;
+        transition: all 0.3s ease;
     }
 
-    .meal-info {
-        background-color: #f8f9fa;
-        padding: 15px;
-        border-radius: 10px;
-        margin: 15px 0;
+        .btn-main:hover {
+            background: var(--gold-hover);
+            color: white;
+            transform: translateX(5px);
+        }
+
+    /* ANIMATION */
+    .animate-fade-in {
+        animation: fadeIn 0.6s cubic-bezier(0.23, 1, 0.32, 1) forwards;
     }
 
-    .recipe-details {
-        background-color: #f8f9fa;
-        padding: 20px;
-        border-radius: 10px;
-        margin-top: 20px;
-        border: 1px solid #dee2e6;
+    @@keyframes fadeIn {
+        from {
+            opacity: 0;
+            transform: translateY(30px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
     }
 
-    .nutrition-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-        gap: 10px;
-        margin-top: 10px;
-    }
+    @@media (max-width: 768px) {
+        .meal-card-horizontal {
+            height: auto;
+            flex-direction: column;
+        }
 
-    .nutrition-grid div {
-        background-color: white;
-        padding: 10px;
-        border-radius: 8px;
-        border-left: 3px solid #C4A46B;
-    }
+        .meal-card-img {
+            height: 240px;
+            flex: 0 0 100%;
+        }
 
-    .btn-success {
-        font-size: 14px;
-        font-weight: bold;
-        padding: 10px 20px;
-        border-radius: 25px;
-        background-color: #C4A46B;
-        border: none;
-        transition: all 0.3s ease-in-out;
-    }
-
-    .btn-success:hover {
-        background-color: #A89F98;
-        transform: scale(1.05);
-    }
-
-    .btn-outline-primary {
-        font-size: 14px;
-        font-weight: bold;
-        padding: 10px 20px;
-        border-radius: 25px;
-        transition: all 0.3s ease-in-out;
-    }
-
-    .alert {
-        padding: 15px;
-        margin: 20px auto;
-        border-radius: 10px;
-        max-width: 600px;
-    }
-
-    .alert-danger {
-        background-color: #f8d7da;
-        border: 1px solid #f5c6cb;
-        color: #721c24;
-    }
-
-    .spinner-border {
-        width: 3rem;
-        height: 3rem;
+        .main-title {
+            font-size: 1.8rem;
+        }
     }
 </style>
+
+<script>
+    // Hàm chuyển đổi ngày hiển thị
+    function showDayMeals(dayIndex) {
+        const containers = document.querySelectorAll('.day-container');
+        containers.forEach(el => {
+            el.style.display = 'none';
+            el.classList.remove('animate-fade-in');
+        });
+
+        const activeDay = document.getElementById('day-' + dayIndex);
+        if (activeDay) {
+            activeDay.style.display = 'block';
+            void activeDay.offsetWidth;
+            activeDay.classList.add('animate-fade-in');
+        }
+        window.scrollTo({ top: document.querySelector('.selector-card').offsetTop - 120, behavior: 'smooth' });
+    }
+
+    // --- SỬA LỖI NÚT TIM TẠI ĐÂY ---
+    // --- ĐÃ CẬP NHẬT ĐỂ CHỌN CATEGORY ---
+    function toggleFavorite(btn, recipeId) {
+        const card = btn.closest('.meal-card-horizontal');
+        const title = card.querySelector('.meal-title').innerText;
+        const image = card.querySelector('.zoom-img').src;
+        const icon = btn.querySelector('i');
+
+        if (btn.classList.contains('active')) {
+            $.post("/AIMealPlanner/ToggleFavorite", { recipeId: recipeId }, function (data) {
+                if (data.success) {
+                    btn.classList.remove('active');
+                    icon.classList.replace('fas', 'far');
+                }
+            });
+            return;
+        }
+
+        Swal.fire({
+            title: 'Food classification',
+            html: '<p style="font-size: 0.9rem; color: #666; margin-top: 5px;">Choose a label to save to your collection</p>',
+            input: 'select',
+            inputOptions: {
+                'healthy': '#Healthy',
+                'quick': '#QuickMeal',
+                'dinner': '#Dinner'
+            },
+            inputPlaceholder: '-- Choose a label --',
+            showCancelButton: true,
+            confirmButtonText: 'Save',
+            cancelButtonText: 'Cancel',
+            confirmButtonColor: '#C4A46B', // Màu Gold trực tiếp cho nút
+            cancelButtonColor: '#6c757d',
+            padding: '1.5rem', // Tạo khoảng trống sang trọng
+            background: '#fdfbf7',
+            customClass: {
+                popup: 'swal-gold-popup',
+                title: 'swal-gold-title',
+                input: 'swal-gold-input',
+                confirmButton: 'swal-gold-button'
+            }
+        }).then((result) => {
+            if (result.isConfirmed && result.value) {
+                const selectedCategory = result.value;
+
+                $.post("/AIMealPlanner/ToggleFavorite", {
+                    recipeId: recipeId,
+                    title: title,
+                    image: image,
+                    category: selectedCategory
+                }, function (data) {
+                    if (data.success) {
+                        btn.classList.add('active');
+                        icon.classList.replace('far', 'fas');
+
+                        // Thông báo Toast thành công đơn giản màu Gold
+                        Swal.fire({
+                            toast: true,
+                            position: 'top-end',
+                            title: `Saved #${selectedCategory}`,
+                            showConfirmButton: false,
+                            timer: 2000,
+                            timerProgressBar: true,
+                            background: '#C4A46B', // Màu nền Gold
+                            color: '#fff',         // Chữ trắng
+                            iconColor: '#fff'      // Icon trắng
+                        });
+                    }
+                });
+            }
+        });
+    }
+    // Hiệu ứng nút Refresh
+    document.getElementById('frmRefresh').addEventListener('submit', function (e) {
+        if (!confirm('Tạo thực đơn mới? Thực đơn hiện tại sẽ bị thay thế.')) {
+            e.preventDefault();
+            return false;
+        }
+        const btn = this.querySelector('#btnRefresh');
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i> Đang tạo thực đơn...';
+        btn.classList.add('disabled', 'opacity-75');
+        btn.disabled = true;
+    });
+</script>

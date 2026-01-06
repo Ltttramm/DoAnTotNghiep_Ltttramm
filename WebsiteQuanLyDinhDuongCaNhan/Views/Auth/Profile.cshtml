@@ -1,105 +1,268 @@
-﻿@model ProfileViewModel
+﻿@*@model ProfileViewModel
+
+    @{
+        ViewBag.Title = "Personal Profile";
+        Layout = "~/Views/Shared/_Layout.cshtml";
+    }
+
+    <div class="max-w-lg mx-auto bg-white p-6 rounded-lg shadow-md mt-[150px]">
+        <h2 class="text-2xl font-bold text-center text-[#C4A46B] mb-6">Personal Profile</h2>
+
+        <div id="success-message" class="text-green-500 text-sm hidden text-center mb-4"></div>
+        <div id="error-message" class="text-red-500 text-sm hidden text-center mb-4"></div>
+
+        <form id="profileForm" class="space-y-4">
+            <input type="hidden" id="userId" value="@Model.Id" />
+
+            <div>
+                <label for="fullName" class="block text-sm font-medium text-gray-700">Full Name</label>
+                <input type="text" id="fullName" class="mt-1 block w-full px-4 py-2 border rounded-md focus:ring-[#C4A46B] focus:border-[#C4A46B]" value="@Model.FullName" placeholder="Enter your full name">
+            </div>
+
+            <div>
+                <label for="email" class="block text-sm font-medium text-gray-700">Email Address</label>
+                <input type="email" id="email" class="mt-1 block w-full px-4 py-2 border rounded-md bg-gray-100" value="@Model.Email" readonly>
+            </div>
+
+            <div>
+                <label for="dateOfBirth" class="block text-sm font-medium text-gray-700">Date of Birth</label>
+                <input type="date" id="dateOfBirth" class="mt-1 block w-full px-4 py-2 border rounded-md"
+                       value="@(Model.DateOfBirth != null ? Model.DateOfBirth.Value.ToString("yyyy-MM-dd") : "")">
+            </div>
+
+            <div>
+                <label for="age" class="block text-sm font-medium text-gray-700">Age</label>
+                <input type="number" id="age" class="mt-1 block w-full px-4 py-2 border rounded-md bg-gray-100"
+                       value="@(Model.Age)" readonly>
+            </div>
+
+            <div>
+                <label for="gender" class="block text-sm font-medium text-gray-700">Gender</label>
+                <select id="gender" class="mt-1 block w-full px-4 py-2 border rounded-md">
+                    <option value="Male" @(Model.Gender == "Male" ? "selected" : "")>Male</option>
+                    <option value="Female" @(Model.Gender == "Female" ? "selected" : "")>Female</option>
+                    <option value="Other" @(Model.Gender == "Other" ? "selected" : "")>Other</option>
+                </select>
+            </div>
+
+            <div class="flex space-x-4">
+                <div class="w-1/2">
+                    <label for="height" class="block text-sm font-medium text-gray-700">Height (m)</label>
+                    <input type="number" id="height" step="0.01" class="mt-1 block w-full px-4 py-2 border rounded-md" value="@Model.Height" placeholder="e.g. 1.75">
+                </div>
+
+                <div class="w-1/2">
+                    <label for="weight" class="block text-sm font-medium text-gray-700">Weight (kg)</label>
+                    <input type="number" id="weight" class="mt-1 block w-full px-4 py-2 border rounded-md" value="@Model.Weight" placeholder="e.g. 70">
+                </div>
+            </div>
+
+            <div>
+                <label for="activityLevel" class="block text-sm font-medium text-gray-700">Activity Level</label>
+                <select id="activityLevel" class="mt-1 block w-full px-4 py-2 border rounded-md">
+                    <option value="" @(string.IsNullOrEmpty(Model.ActivityLevel) ? "selected" : "")>-- Select activity level --</option>
+                    <option value="Low" @(Model.ActivityLevel == "Low" ? "selected" : "")>Low (Sedentary)</option>
+                    <option value="Medium" @(Model.ActivityLevel == "Medium" ? "selected" : "")>Medium (Active)</option>
+                    <option value="High" @(Model.ActivityLevel == "High" ? "selected" : "")>High (Very Active)</option>
+                </select>
+            </div>
+
+            <div>
+                <label for="goal" class="block text-sm font-medium text-gray-700">Your Goal</label>
+                <select id="goal" class="mt-1 block w-full px-4 py-2 border rounded-md">
+                    <option value="" @(string.IsNullOrEmpty(Model.Goal) ? "selected" : "")>-- Select your goal --</option>
+                    <option value="Lose Weight" @(Model.Goal == "Lose Weight" ? "selected" : "")>Lose Weight</option>
+                    <option value="Maintain weight" @(Model.Goal == "Maintain weight" ? "selected" : "")>Maintain Weight</option>
+                    <option value="Gain Weight" @(Model.Goal == "Gain Weight" ? "selected" : "")>Gain Weight</option>
+                </select>
+            </div>
+
+            <div>
+                <label for="preferredDiet" class="block text-sm font-medium text-gray-700">Preferred Diet</label>
+                <select id="preferredDiet" class="mt-1 block w-full px-4 py-2 border rounded-md">
+                    <option value="" @(string.IsNullOrEmpty(Model.PreferredDiet) ? "selected" : "")>-- Select diet preference --</option>
+                    <option value="Keto" @(Model.PreferredDiet == "Keto" ? "selected" : "")>Keto</option>
+                    <option value="Low Carb" @(Model.PreferredDiet == "Low Carb" ? "selected" : "")>Low Carb</option>
+                    <option value="Eat Clean" @(Model.PreferredDiet == "Eat Clean" ? "selected" : "")>Eat Clean</option>
+                    <option value="Vegetarian" @(Model.PreferredDiet == "Vegetarian" ? "selected" : "")>Vegetarian</option>
+                </select>
+            </div>
+
+            <div>
+                <label for="allergy" class="block text-sm font-medium text-gray-700">Allergies</label>
+                <textarea id="allergy" class="mt-1 block w-full px-4 py-2 border rounded-md" placeholder="List any food allergies here...">@Model.Allergy</textarea>
+            </div>
+
+            <button type="submit" class="w-full bg-[#C4A46B] text-white py-2 rounded-md hover:bg-[#A89F98] transition font-semibold">
+                Save Changes
+            </button>
+        </form>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <script>
+        $(document).ready(function () {
+            // Automatically calculate age when Date of Birth changes
+            $("#dateOfBirth").change(function () {
+                let birthDate = new Date($(this).val());
+                let today = new Date();
+                let age = today.getFullYear() - birthDate.getFullYear();
+                let monthDiff = today.getMonth() - birthDate.getMonth();
+
+                // Check if birthday hasn't occurred yet this year
+                if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+                    age--;
+                }
+
+                if (!isNaN(age) && age >= 0) {
+                    $("#age").val(age);
+                } else {
+                    $("#age").val("");
+                }
+            });
+
+            $("#profileForm").submit(function (e) {
+                e.preventDefault(); // Prevent page reload
+
+                let profileData = {
+                    Id: $("#userId").val(),
+                    FullName: $("#fullName").val().trim(),
+                    Email: $("#email").val().trim(),
+                    DateOfBirth: $("#dateOfBirth").val(),
+                    Age: $("#age").val(),
+                    Gender: $("#gender").val().trim(),
+                    Height: parseFloat($("#height").val()) || 0,
+                    Weight: parseFloat($("#weight").val()) || 0,
+                    ActivityLevel: $("#activityLevel").val().trim(),
+                    Goal: $("#goal").val().trim(),
+                    PreferredDiet: $("#preferredDiet").val().trim(),
+                    Allergy: $("#allergy").val().trim()
+                };
+
+                $.ajax({
+                    url: "/Auth/Update",
+                    type: "POST",
+                    contentType: "application/json",
+                    data: JSON.stringify(profileData),
+                    success: function (response) {
+                        if (response.success) {
+                            $("#success-message").text("Profile updated successfully!").removeClass("hidden").fadeIn().delay(2000).fadeOut();
+                            $("#error-message").addClass("hidden");
+                        } else {
+                            $("#error-message").text(response.message).removeClass("hidden");
+                        }
+                    },
+                    error: function () {
+                        $("#error-message").text("An error occurred. Please try again!").removeClass("hidden");
+                    }
+                });
+            });
+        });
+    </script>*@
+
+@model ProfileViewModel
 
 @{
-    ViewBag.Title = "Hồ sơ cá nhân";
+    ViewBag.Title = "Personal Profile";
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
 <div class="max-w-lg mx-auto bg-white p-6 rounded-lg shadow-md mt-[150px]">
-    <h2 class="text-2xl font-bold text-center text-[#C4A46B] mb-6">Hồ sơ cá nhân</h2>
+    <h2 class="text-2xl font-bold text-center text-[#C4A46B] mb-6">Personal Profile</h2>
 
-    <div id="success-message" class="text-green-500 text-sm hidden text-center mb-4"></div>
-    <div id="error-message" class="text-red-500 text-sm hidden text-center mb-4"></div>
+    @* Thông báo trạng thái *@
+    <div id="success-message" class="text-green-500 text-sm hidden text-center mb-4 p-2 bg-green-50 rounded border border-green-200"></div>
+    <div id="error-message" class="text-red-500 text-sm hidden text-center mb-4 p-2 bg-red-50 rounded border border-red-200"></div>
 
     <form id="profileForm" class="space-y-4">
+        @* Input hidden chứa ID để định danh User khi Update *@
         <input type="hidden" id="userId" value="@Model.Id" />
 
         <div>
-            <label for="fullName" class="block text-sm font-medium text-gray-700">Họ và tên</label>
-            <input type="text" id="fullName" class="mt-1 block w-full px-4 py-2 border rounded-md focus:ring-[#C4A46B] focus:border-[#C4A46B]" value="@Model.FullName">
+            <label for="fullName" class="block text-sm font-medium text-gray-700">Full Name</label>
+            <input type="text" id="fullName" class="mt-1 block w-full px-4 py-2 border rounded-md focus:ring-[#C4A46B] focus:border-[#C4A46B]" value="@Model.FullName" placeholder="Enter your full name">
         </div>
 
         <div>
-            <label for="email" class="block text-sm font-medium text-gray-700">Email</label>
+            <label for="email" class="block text-sm font-medium text-gray-700">Email Address</label>
             <input type="email" id="email" class="mt-1 block w-full px-4 py-2 border rounded-md bg-gray-100" value="@Model.Email" readonly>
         </div>
 
-        <div>
-            <label for="dateOfBirth" class="block text-sm font-medium text-gray-700">Ngày sinh</label>
-            <input type="date" id="dateOfBirth" class="mt-1 block w-full px-4 py-2 border rounded-md"
-                   value="@(Model.DateOfBirth != null ? Model.DateOfBirth.Value.ToString("yyyy-MM-dd") : "")">
-
+        <div class="flex space-x-4">
+            <div class="w-1/2">
+                <label for="dateOfBirth" class="block text-sm font-medium text-gray-700">Date of Birth</label>
+                <input type="date" id="dateOfBirth" class="mt-1 block w-full px-4 py-2 border rounded-md"
+                       value="@(Model.DateOfBirth != null ? Model.DateOfBirth.Value.ToString("yyyy-MM-dd") : "")">
+            </div>
+            <div class="w-1/2">
+                <label for="age" class="block text-sm font-medium text-gray-700">Age</label>
+                <input type="number" id="age" class="mt-1 block w-full px-4 py-2 border rounded-md bg-gray-100"
+                       value="@(Model.Age)" readonly>
+            </div>
         </div>
 
         <div>
-            <label for="age" class="block text-sm font-medium text-gray-700">Tuổi</label>
-            <input type="number" id="age" class="mt-1 block w-full px-4 py-2 border rounded-md bg-gray-100"
-                   value="@(Model.Age)" readonly>
-        </div>
-
-        <div>
-            <label for="gender" class="block text-sm font-medium text-gray-700">Giới tính</label>
+            <label for="gender" class="block text-sm font-medium text-gray-700">Gender</label>
             <select id="gender" class="mt-1 block w-full px-4 py-2 border rounded-md">
-                <option value="Male" @(Model.Gender == "Male" ? "selected" : "")>Nam</option>
-                <option value="Female" @(Model.Gender == "Female" ? "selected" : "")>Nữ</option>
+                <option value="Male" @(Model.Gender == "Male" ? "selected" : "")>Male</option>
+                <option value="Female" @(Model.Gender == "Female" ? "selected" : "")>Female</option>
+                <option value="Other" @(Model.Gender == "Other" ? "selected" : "")>Other</option>
             </select>
         </div>
 
         <div class="flex space-x-4">
             <div class="w-1/2">
-                <label for="height" class="block text-sm font-medium text-gray-700">Chiều cao (m)</label>
-                <input type="number" id="height" step="0.01" class="mt-1 block w-full px-4 py-2 border rounded-md" value="@Model.Height">
+                @* Đã sửa đơn vị thành cm *@
+                <label for="height" class="block text-sm font-medium text-gray-700">Height (cm)</label>
+                <input type="number" id="height" step="1" class="mt-1 block w-full px-4 py-2 border rounded-md focus:ring-[#C4A46B] focus:border-[#C4A46B]"
+                       value="@Model.Height" placeholder="e.g. 170">
             </div>
 
             <div class="w-1/2">
-                <label for="weight" class="block text-sm font-medium text-gray-700">Cân nặng (kg)</label>
-                <input type="number" id="weight" class="mt-1 block w-full px-4 py-2 border rounded-md" value="@Model.Weight">
+                <label for="weight" class="block text-sm font-medium text-gray-700">Weight (kg)</label>
+                <input type="number" id="weight" step="0.1" class="mt-1 block w-full px-4 py-2 border rounded-md focus:ring-[#C4A46B] focus:border-[#C4A46B]"
+                       value="@Model.Weight" placeholder="e.g. 70">
             </div>
         </div>
 
-
         <div>
-            <label for="activityLevel" class="block text-sm font-medium text-gray-700">Mức độ hoạt động</label>
+            <label for="activityLevel" class="block text-sm font-medium text-gray-700">Activity Level</label>
             <select id="activityLevel" class="mt-1 block w-full px-4 py-2 border rounded-md">
-                <option value="" @(string.IsNullOrEmpty(Model.ActivityLevel) ? "selected" : "")>-- Chọn mức độ hoạt động --</option>
-                <option value="Low" @(Model.ActivityLevel == "Low" ? "selected" : "")>Thấp</option>
-                <option value="Medium" @(Model.ActivityLevel == "Medium" ? "selected" : "")>Trung bình</option>
-                <option value="High" @(Model.ActivityLevel == "High" ? "selected" : "")>Cao</option>
-
+                <option value="" @(string.IsNullOrEmpty(Model.ActivityLevel) ? "selected" : "")>-- Select activity level --</option>
+                <option value="Low" @(Model.ActivityLevel == "Low" ? "selected" : "")>Low (Sedentary)</option>
+                <option value="Medium" @(Model.ActivityLevel == "Medium" ? "selected" : "")>Medium (Active)</option>
+                <option value="High" @(Model.ActivityLevel == "High" ? "selected" : "")>High (Very Active)</option>
             </select>
         </div>
 
-
         <div>
-            <label for="goal" class="block text-sm font-medium text-gray-700">Mục tiêu</label>
+            <label for="goal" class="block text-sm font-medium text-gray-700">Your Goal</label>
             <select id="goal" class="mt-1 block w-full px-4 py-2 border rounded-md">
-                <option value="" @(string.IsNullOrEmpty(Model.Goal) ? "selected" : "")>-- Chọn mục tiêu --</option>
-                <option value="Lose Weight" @(Model.Goal == "Lose Weight" ? "selected" : "")>Giảm cân</option>
-                <option value="Maintain weight" @(Model.Goal == "Maintain weight" ? "selected" : "")>Duy trì cân nặng</option>
-                <option value="Gain Weight" @(Model.Goal == "Gain Weight" ? "selected" : "")>Tăng cân</option>
-
+                <option value="" @(string.IsNullOrEmpty(Model.Goal) ? "selected" : "")>-- Select your goal --</option>
+                <option value="Lose Weight" @(Model.Goal == "Lose Weight" ? "selected" : "")>Lose Weight</option>
+                <option value="Maintain weight" @(Model.Goal == "Maintain weight" ? "selected" : "")>Maintain Weight</option>
+                <option value="Gain Weight" @(Model.Goal == "Gain Weight" ? "selected" : "")>Gain Weight</option>
             </select>
         </div>
 
         <div>
-            <label for="preferredDiet" class="block text-sm font-medium text-gray-700">Chế độ ăn ưa thích</label>
+            <label for="preferredDiet" class="block text-sm font-medium text-gray-700">Preferred Diet</label>
             <select id="preferredDiet" class="mt-1 block w-full px-4 py-2 border rounded-md">
-                <option value="" @(string.IsNullOrEmpty(Model.PreferredDiet) ? "selected" : "")>-- Chọn chế độ ăn --</option>
+                <option value="" @(string.IsNullOrEmpty(Model.PreferredDiet) ? "selected" : "")>-- Select diet preference --</option>
                 <option value="Keto" @(Model.PreferredDiet == "Keto" ? "selected" : "")>Keto</option>
                 <option value="Low Carb" @(Model.PreferredDiet == "Low Carb" ? "selected" : "")>Low Carb</option>
                 <option value="Eat Clean" @(Model.PreferredDiet == "Eat Clean" ? "selected" : "")>Eat Clean</option>
-                <option value="Chay" @(Model.PreferredDiet == "Chay" ? "selected" : "")>Chay</option>
+                <option value="Vegetarian" @(Model.PreferredDiet == "Vegetarian" ? "selected" : "")>Vegetarian</option>
             </select>
         </div>
 
-
         <div>
-            <label for="allergy" class="block text-sm font-medium text-gray-700">Dị ứng</label>
-            <textarea id="allergy" class="mt-1 block w-full px-4 py-2 border rounded-md">@Model.Allergy</textarea>
+            <label for="allergy" class="block text-sm font-medium text-gray-700">Allergies</label>
+            <textarea id="allergy" class="mt-1 block w-full px-4 py-2 border rounded-md" placeholder="List any food allergies here...">@Model.Allergy</textarea>
         </div>
 
-        <button type="submit" class="w-full bg-[#C4A46B] text-white py-2 rounded-md hover:bg-[#A89F98] transition">
-            Lưu
+        <button type="submit" class="w-full bg-[#C4A46B] text-white py-2 rounded-md hover:bg-[#A89F98] transition font-semibold">
+            Save Changes
         </button>
     </form>
 </div>
@@ -107,61 +270,69 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
 <script>
     $(document).ready(function () {
-        // Tự động tính tuổi khi nhập ngày sinh
+        // Tự động tính tuổi khi thay đổi Ngày sinh
         $("#dateOfBirth").change(function () {
             let birthDate = new Date($(this).val());
             let today = new Date();
             let age = today.getFullYear() - birthDate.getFullYear();
             let monthDiff = today.getMonth() - birthDate.getMonth();
-
-            // Kiểm tra nếu chưa đến sinh nhật năm nay thì giảm 1 tuổi
             if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
                 age--;
             }
-
-            if (!isNaN(age) && age >= 0) {
-                $("#age").val(age);
-            } else {
-                $("#age").val("");
-            }
+            $("#age").val(!isNaN(age) && age >= 0 ? age : "");
         });
 
+        // Xử lý gửi Form bằng AJAX
         $("#profileForm").submit(function (e) {
-            e.preventDefault(); // Ngăn chặn form reload trang
+            e.preventDefault();
 
+            // Xử lý chuyển đổi định dạng số (thay dấu phẩy thành dấu chấm để hệ thống hiểu đúng số thập phân)
+            let heightVal = $("#height").val().toString().replace(',', '.');
+            let weightVal = $("#weight").val().toString().replace(',', '.');
+
+            // SỬA ĐOẠN NÀY
             let profileData = {
-                Id: $("#userId").val(),
+                Id: parseInt($("#userId").val()),
                 FullName: $("#fullName").val().trim(),
                 Email: $("#email").val().trim(),
                 DateOfBirth: $("#dateOfBirth").val(),
-                Age: $("#age").val(),
-                Gender: $("#gender").val().trim(),
-                Height: parseFloat($("#height").val()) || 0,
-                Weight: parseFloat($("#weight").val()) || 0,
-                ActivityLevel: $("#activityLevel").val().trim(),
-                Goal: $("#goal").val().trim(),
-                PreferredDiet: $("#preferredDiet").val().trim(),
+                Gender: $("#gender").val(),
+                // Thay vì dùng trực tiếp $("#height").val(), hãy dùng biến đã xử lý:
+                Height: heightVal || null,
+                Weight: weightVal || null,
+                ActivityLevel: $("#activityLevel").val(),
+                Goal: $("#goal").val(),
+                PreferredDiet: $("#preferredDiet").val(),
                 Allergy: $("#allergy").val().trim()
             };
-
             $.ajax({
                 url: "/Auth/Update",
                 type: "POST",
-                contentType: "application/json",
-                data: JSON.stringify(profileData),
+                data: profileData, // Gửi dạng Form Data truyền thống để Controller dễ Bind
                 success: function (response) {
                     if (response.success) {
-                        $("#success-message").text("Cập nhật thành công!").removeClass("hidden").fadeIn().delay(2000).fadeOut();
+                        // Hiện thông báo thành công
+                        $("#success-message").text("Profile updated successfully!").removeClass("hidden").fadeIn();
                         $("#error-message").addClass("hidden");
+
+                        // Cuộn lên đầu trang
+                        window.scrollTo({ top: 0, behavior: 'smooth' });
+
+                        // Tự động ẩn sau 3 giây
+                        setTimeout(function () {
+                            $("#success-message").fadeOut();
+                        }, 3000);
                     } else {
-                        $("#error-message").text(response.message).removeClass("hidden");
+                        // Hiện lỗi từ phía Server trả về
+                        $("#error-message").text(response.message || "Update failed.").removeClass("hidden");
+                        $("#success-message").addClass("hidden");
                     }
                 },
-                error: function () {
-                    $("#error-message").text("Có lỗi xảy ra. Vui lòng thử lại!").removeClass("hidden");
+                error: function (xhr) {
+                    // Lỗi đường truyền hoặc lỗi 500
+                    $("#error-message").text("An error occurred. Status: " + xhr.status).removeClass("hidden");
                 }
             });
         });
     });
 </script>
-
